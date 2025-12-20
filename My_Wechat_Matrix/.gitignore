@@ -1,0 +1,25 @@
+# Secrets and API Keys
+matrix_config.json
+
+# Generated Content
+accounts/*/output.html
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log

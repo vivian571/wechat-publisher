@@ -1,0 +1,14 @@
+{
+    "account_name": "跨境电商实战",
+    "account_id": "Account_A_CrossBorder",
+    "enabled": true,
+    "generation_frequency": "daily",
+    "preferred_topics": [
+        "Shopee选品策略",
+        "东南亚市场分析",
+        "跨境电商避坑指南",
+        "数据分析实战"
+    ],
+    "target_word_count": 1800,
+    "emoji_usage": "moderate"
+}

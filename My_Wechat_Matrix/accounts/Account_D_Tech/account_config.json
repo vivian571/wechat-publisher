@@ -1,0 +1,14 @@
+{
+    "account_name": "代码笔记",
+    "account_id": "Account_D_Tech",
+    "enabled": true,
+    "generation_frequency": "daily",
+    "preferred_topics": [
+        "Python技巧",
+        "性能优化",
+        "设计模式",
+        "开发工具"
+    ],
+    "target_word_count": 1600,
+    "emoji_usage": "moderate"
+}

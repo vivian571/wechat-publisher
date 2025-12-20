@@ -1,0 +1,14 @@
+{
+    "account_name": "生活碎片",
+    "account_id": "Account_C_Life",
+    "enabled": true,
+    "generation_frequency": "3_times_per_week",
+    "preferred_topics": [
+        "生活观察",
+        "情绪管理",
+        "慢生活",
+        "自我成长"
+    ],
+    "target_word_count": 1200,
+    "emoji_usage": "low"
+}
