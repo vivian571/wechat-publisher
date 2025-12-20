@@ -1,0 +1,16 @@
+# 微博热点文章自动生成与发布系统依赖
+
+# 基础库
+requests>=2.28.1
+pymysql>=1.0.2
+schedule>=1.1.0
+
+# 微博爬虫相关
+beautifulsoup4>=4.11.1
+lxml>=4.9.1
+
+# 文件监控
+watchdog>=2.1.9
+
+# 日志和配置管理
+python-dotenv>=0.21.0

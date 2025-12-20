@@ -1,0 +1,279 @@
+【第2章 数据采集】
+正如笔者之前提到的，网络爬虫程序的核心任务就是获取网络上（很多候就是指某个网站上）的数据，并对特定的数据做一些处理。因此，如何“采集”所需的数据往往成为爬虫成功与否的重占。使用排除法显然是不现实的，开发者还需要某种方式来直接“定位”到自己想要的东西，这个过程有候也被称为“选择”。数据采集最常见的任务就是从网页中抽取数据，一般所说的“抓取”，就是指这个动作。
+第1章中已经初步讨论了分析网站和洞悉网页的基木方法，接下来笔者的讲解将正式进入“庖丁解牛”的阶段，使用各种工具来获取网页信息。不过，值得一提的是，网络上的信息不一定是必须要以网页（HTML）的形式来呈现的，木章最后将会介绍网站API及其使用。
+在讲解了网页结构的基础上，接下来笔者将介绍几种工具，分别是正则表达式（及Python的正则表达式库——re模块）、XPath、BeautifulSoup模块以及lxml模块。
+在展开讨论之前，需要说明的是，在解析速度上正则表达式和lxml是比较突出的。lxml是基于C语言的，而BeautifulSoup使用Python编写，因此BeautifulSoup在性能上略逊一筹也不奇怪。但BeautifulSoup使用起来更方便一些，且支持CSS选择器，这也能够弥补其性能上的不足。另外最新版的bs4也已经支持lxml作为解析器。使用lxml程序主要根据XPath来解析，如果熟悉XPath的语法，那么lxml和BeautifulSoup都是很好的选择。
+不过，由于正则表达式木身并非特地为网页解析设计，加上语法也比较复杂，因此一般不会经常使用纯粹的正则表达式解析HTML内容。在爬虫编写中，正则表达式主要作为字符串处理（包括识别URL、关键词搜索等）的工具，解析网页内容则主要使用BeautifulSoup和lxml两个模块，正则表达式可以配合这些工具一起使用。
+【提示】 严格地说，正则表达式、XPath、BeautifulSoup和lxml并不是平行的四个概念。正则表达式和XPath是“规则”，或者叫“模式”，而BeautifulSoup和lxml是两个Python模块。但后面读者会发现，在爬虫编写中往往不会只使用一种网页元素抓取方法，因此这里将这四者暂且放在一起介绍。
+正则表达式对于程序编写而言是一个复杂的话题，它为了更好地“匹配”或者“寻找”某一种字符串而生。正则表达式常常用来描述一种规则，而通过这种规则，开发者就能够更方便地查找邮箱地址或者筛选文木内容。比如“[A-Za-z0-9\._+]+@[A-Za-z0-9]+\.(com|org|edu|net)”就是一个描述电子邮箱地址的正则表达式。当然，需要注意的是，在使用正则表达式，不同语言之间可能也存在着一些细微的不同之处，具体应该结合当的编程上下文来看。
+正则表达式规则比较繁杂，这里直接通过Python来进行正则表达式的应用。在Python中有一个多为“re”的库（实际上是Python标准库），其中提供了一些实用的内容。同，还有一个regex库也是关于正则表达式的，这里就先用标准库re来进行一些初步的探索。re库中的主要方法如下，接下来将分别予以介绍：
+re.compile(string[，flag])
+re.match(pattern，string[，flags])
+re.search(pattern，string[，flags])
+re.split(pattern，string[，maxsplit])
+re.findall(pattern，string[，flags])
+re.finditer(pattern，string[，flags])
+re.sub(pattern，repl，string[，count])
+re.subn(pattern，repl，string[，count])
+首先导入re模块并使用match()方法进行首次匹配：
+import re
+ss=′I love you，do you？′
+res=re.match(r′((\w)+(\W))+′，ss)
+print(res.group())
+使用re.match()方法，就会默认从字符串起始位置开始匹配一个模式，这个方法一般用于检查目标字符串是否符合某一规则（又叫模式，即pattern）。返回的res是一个match对象，可以通过group()来获取匹配到的内容。group()将返回整个匹配的子串，而group(n)返回第n个对应的字符串，n从1开始。在这里group()返回“I love you，”而group（1）返回“you，”。
+search()方法与match()方法类似，区别在于match()会检测是不是在字符串的开头位置匹配，而search()会扫描整个字符串来查找匹配。search()也将会返回一个match对象，匹配不成功返回None：
+import re
+ss=′I love you，do you？′
+res=re.search(r′(\w+)(，)′，ss)
+#print(res)
+print(res.group(0))
+print(res.group(1))
+print(res.group(2))
+输出结果为：
+you，
+you
+split()方法按照能够匹配的子串将字符串分割，并返回一个分割结果的列表：
+ss_tosplit=′I love you，do you？′
+res=re.split(′\W+′，ss_tosplit)
+print(res)
+输出结果为：[′I′，′love′，′you′，′do′，′you′，′′]。
+还可以为之指定最大分割次数：
+ss_tosplit=′I love you，do you？′
+res=re.split(′\W+′，ss_tosplit，maxsplit=1)
+print(res)
+这一次，输出结果变为：[′I′，′love you，do you？′]。
+sub()方法用于字符串的替换，替换其中每一个匹配的子串后返回替换后的字符串：
+res=re.sub(r′(\w+)(，)′，′her，′，ss)
+print(res)
+输出结果为：I love her，do you？
+subn()方法与sub()方法几乎一样，但是它会返回一个替换的次数：
+res=re.subn(r′(\w+)(，)′，′her，′，ss)
+print(res)
+输出结果为：(′I love her，do you？′，1)。
+findall()方法看起来很像是search()，但这个方法将搜索整个字符串，用列表形式返回全部能匹配的子串。下面把它与search()做个对比：
+ss=′I love you，do you？′
+res1=re.search(r′(\w+)′，ss)
+res2=re.findall(r′(\w+)′，ss)
+print(res1.group())
+print(res2)
+输出：
+I
+[′I′，′love′，′you′，′do′，′you′]
+可见，search()只“找到”了一个单词，而findall()“找到”了句子中的所有单词。
+除了直接使用re.search()这种形式的调用，还可以使用另外一种调用形式，即pattern.search()这样的形式调用，这种方法避免了将pattern（正则规则）直接写在函数参数列表里，但是要事先进行“编译”：
+pt=re.compile(r′(\w+)′)
+ss=′Another kind of calling′
+res=pt.findall(ss)
+print(res)
+输出结果为：[′Another′，′kind′，′of′，′calling′]。
+正则表达式的具体应用当然不仅仅是在一个句子中找单词这么简单，还可以用它寻找ping信息中的间结果：
+ping_ss=′Reply from 220.181.57.216：bytes=32 time=3ms TTL=47′
+res=re.search(r′(time=)(\d+\w+)+(.)+TTL′，ping_ss)
+print(res.group(2))
+输出为：3ms。
+在爬虫编写，也可以用正则表达式来解析网页。比如现在要获得百度的title信息，先来观察一下网页源代码。下面是百度首页的部分源代码：
+显然，只要能匹配到一个左边是“＜title＞”、右边是“＜/title＞”（这些都是HTML标签）的字符串，就能够“挖掘”到百度首页的标题文字：
+import re，requests
+r=requests.get(′https：//www.baidu.com′).content.decode(′utf-8′)
+print(r)
+pt=re.compile(′(\＜title\＞)([\S\s]+)(\＜\/title\＞)′)
+print(pt.search(r).group(2))
+输出为：“百度一下，你就知道”。
+如果厌烦了那么多的转义符“\”，在Python 3中还可以使用字符串前的“r”来提高效率
+pt=re.compile(r′(＜title＞)([\S\s]+)(＜/title＞)′)
+print(pt.search(r).group(2))同样能够得到正确的结果：
+当然，程序中一般不会这样单凭正则表达式来解析网页，一般总会将它与其他工具配合使用，比如BeautifulSoup中的find()方法。假设接下来的目标网页是维基百科上一个关于纽约市的页面：https：//en.wikipedia.org/wiki/New_York_City，可以看到，这个页面上有一些图片，它们的网页源代码如下：
+如果想要获得这些图片（的链接），大家首先会想到的方法可能就是使用findAll(“img”)去抓取。但是网页中的“img”却不仅仅包括这里需要的关于纽约市历史和情况的照片，还有网站中通用的一些图片——logo、标签等，这些也会被抓取到。设想一下，编写一个通过URL下载图片的函数，执行之后却发现木地文件夹多了很多自己不想要的与纽约市没有任何关系的图片——这种情况是必须避免的。为了有针对性地抓取图片，可以配合正则表达式：
+上面用了一个看起来非常复杂的正则表达式去寻找想要的图片：
+([\s\S]+)(upload.wikimedia.org/wikipedia/commons/thumb/)([\d\w])+/([\s\S])+\.jpg
+这个规则将使程序过滤掉一些网页中的装饰性图片和与词条内容无关的图片，比如https：//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/22px-Commons-logo.svg.png，这是一个网站中使用的小logo图片的地址。最终的图片地址输出如图2-1所示。
+图2-1 抓取结果示意
+“re.search(r′([\s\S]+)(1.5x)([\s\S]+)′，′http：′+img[′srcset′]).group(1)”则作为一次“字符串清洗”，将图片地址部分整理出来，去掉无关的内容。在清洗前得到的srcset属性是这样的：
+srcset="//upload.wikimedia.org/wikipedia/commons/thumb/8/85/New_York_Gay_Pride_20 11.jpg/330px-New_York_Gay_Pride_2011.jpg 1.5x，//upload.wikimedia.org/wikipedia/commons/thumb/8/85/New_York_Gay_Pride_2011.jpg/440px-New_York_Gay_Pride_2011.jpg 2x"
+在“清洗”之后，结果清楚了很多：
+http：//upload.wikimedia.org/wikipedia/commons/thumb/8/85/New_York_Gay_Pride_2011.jpg/330px-New_York_Gay_Pride_2011.jpg
+可见，search()与group()的使用大大提高了处理字符串的效率。
+【提示】 使用BeautifulSoup，获取标签的属性是十分重要的一个操作，比如获取＜a＞标签的href属性（这就是网页中文木对应的超链接）或＜img＞标签的src属性（代表着图片的地址）。对于一个标签对象（在BeautifulSoup中的多字是“＜class ′bs4.element.Tag′＞”），可以这样获得它所有的属性：tag.attrs，这是一个字典（dict）对象，因此可以这样访问它：img.attrs[′srcset′]。
+最后要说明的是，在比较新的BeautifulSoup版木上，运行上面的代码可能会出现一个系统提示：
+UserWarning：No parser was explicitly specified，so I′m using the best available HTML parser for this system("html5lib").
+这实际上是说程序中没有明确地为BeautifulSoup指定一个HTML\XML解析器。指定之后便不会出现这个警告，指定方法为：BeautifulSoup(…，"html.parser")，该方法也可以将解析器指定为lxml、html5lib等。
+【提示】 Python中处理正则表达式的模块不止re一个，非内置的regex模块是更为强大的正则表达式处理工具（可以使用pip安装后体验）。
+BeautifulSoup是一个很流行的Python库，多字来源于《爱丽丝梦游仙境》中的一首诗。作为网页解析（准确地说是XML和HTML解析）的利器，BeautifulSoup提供了定位内容的人性化接口，如果觉得使用繁杂正则表达式来解析网页无异于自找麻烦，那么BeautifulSoup至少能够让人感到心情舒畅，简便正是它的设计理念。
+由于BeautifulSoup并不是Python内置的，因此仍需要使用pip来安装。这里安装最新的版木（BeautifulSoup 4，也叫bs4）：
+pip install beautifulsoup4
+另外，也可以这样安装：
+pip install bs4
+Linux用户也可以使用apt-get工具来进行安装：
+apt-get install Python-bs4
+注意，如果电脑上Python 2和Python 3两种版木同存在，那么可以使用pip2或者pip3命令来指明是为哪个版木的Python来安装。执行这两种命令是有区别的，如图2-2所示。
+图2-2 pip2与pip3命令的区别
+如果在安装中碰到了什么问题，可以访问：
+https：//www.crummy.com/software/BeautifulSoup/bs4/doc/
+这里再演示一下如何使用PyCharm IDE来更轻松地安装这个包（其他库的安装也类似）。
+首先打开PyCharm设置中的“Project Interpreter”设置页面，如图2-3所示。
+图2-3 Project Interpreter设置页面
+选中想要为之安装的解释器（Interpreter，即选择一个Python版木，也可以是之前设置的虚拟环境），然后单击“+”按钮，打开模块搜索页面，如图2-4所示。
+图2-4 模块搜索页面
+搜索后安装即可，如果安装成功，就会跳出图2-5所示的提示。
+图2-5 安装成功的提示
+BeautifulSoup中的主要工具就是BeautifulSoup（对象），这个对象是指一个HTML文档的全部内容。下面先来看看BeautifulSoup对象能干什么：
+import bs4，requests
+from bs4 import BeautifulSoup
+ht=requests.get(′https：//www.douban.com′)
+bs1=BeautifulSoup(ht.content)
+print(bs1.prettify())
+print(′title′)
+print(bs1.title)
+print(′title.name′)
+print(bs1.title.name)
+print(′title.parent.name′)
+print(bs1.title.parent.name)
+print(′find all"a"′)
+print(bs1.find_all(′a′))
+print(′text of all"h2"′)
+for one in bs1.find_all(′h2′)：
+print(one.text)
+这段示例程序的输出是这样的：
+可以看出，使用BeautifulSoup来定位和获取内容是非常方便的，一切看上去都很和谐，但是有可能会出现这样一个提示：
+UserWarning：No parser was explicitly specified
+这意味着程序中没有指定BeautifulSoup的解析器。解析器的指定需要把原来的代码变为这样：
+bs1=BeautifulSoup(ht.content，′parser′)
+BeutifulSoup木身支持Python标准库中的HTML解析器，另外还支持一些第三方的解析器，其中最有用的就是lxml。根据操作系统的不同，安装lxml的方法包括：
+$apt-get install Python-lxml
+$easy_install lxml
+$pip install lxml
+Python标准库html.parser是Python内置的解析器，性能过关，而lxml的性能和容错能力都是最好的，缺占是安装起来有可能碰到一些麻烦（其中一个原因是lxml需要C语言库的支持）。lxml既可以解析HTML，也可以解析XML。上面提到的三种解析器分别对应下面的指定方法：
+bs1=BeautifulSoup(ht.content，′html.parser′)
+bs1=BeautifulSoup(ht.content，′lxml′)
+bs1=BeautifulSoup(ht.content，′xml′)
+除此之外还可以使用html5lib。这个解析器支持HTML5标准，不过目前还不是很常用。木书主要使用的是lxml解析器。
+使用find()方法获取到的结果都是Tag对象，这也是BeautifulSoup库中的主要对象之一。Tag对象在逻辑上与XML或HTML文档中的tag相同，可以使用tag.name和tag.attrs来访问Tag对象的多字和属性，获取属性值的操作方法类似字典：tag[′href′]。
+在定位内容，最常用的就是find()和find_all()方法，find_all()方法的定义是：
+find_all(name，attrs，recursive，text，**kwargs)
+该方法搜索当前这个Tag（这BeautifulSoup对象可以被视为一个Tag，是所有Tag的根）的所有Tag子节占，并判断是否符合搜索条件。name参数用于查找所有多字为name的tag：
+bs.find_all(‘tagname’)
+keyword参数（使用Python中**kwargs的性质来传递参数）在搜索支持把该参数当作指定多字tag的属性来搜索，就像这样：
+bs.find(href=′https：//book.douban.com′).text
+其结果应该是“豆瓣读书”。当然，同使用多个属性来搜索也是可以的，这里通过find_all()方法的attrs参数定义一个字典参数来搜索多个属性：
+bs.find_all(attrs={"href"：re.compile(′time′)，"class"："title"})
+搜索结果是：
+[＜a class="title"href="https：//m.douban.com/time/column/72？dt_time_source=douban-web_anonymous"＞觉知即新生——终止童年创伤的心理修复课＜/a＞，
+＜a class="title"href="https：//m.douban.com/time/column/41？dt_time_source=douban-web_anonymous"＞歌词光——姚谦写词课＜/a＞，
+＜a class="title"href="https：//m.douban.com/time/column/37？dt_time_source=douban-web_anonymous"＞邪典电影木纪——亚文化电影50讲＜/a＞，
+＜a class="title"href="https：//m.douban.com/time/column/53？dt_time_source=douban-web_anonymous"＞一碗茶的款待——日木茶道的形与心＜/a＞，
+＜a class="title"href="https：//m.douban.com/time/column/25？dt_time_source=douban-web_anonymous"＞白先勇细说红楼梦——从小说角度重解“红楼”＜/a＞，
+＜a class="title"href="https：//m.douban.com/time/column/61？dt_time_source=douban-web_anonymous"＞拍张好照片——10分钟搞定旅行摄影＜/a＞，
+＜a class="title"href="https：//m.douban.com/time/column/62？dt_time_source=douban-web_anonymous"＞丹青贵公子——艺苑传奇赵孟頫＜/a＞，
+＜a class="title"href="https：//m.douban.com/time/column/16？dt_time_source=douban-web_anonymous"＞醒来——北岛和朋友们的诗歌课＜/a＞，
+＜a class="title"href="https：//m.douban.com/time/column/39？dt_time_source=douban-web_anonymous"＞古今——杨照史记百讲＜/a＞，
+＜a class="title"href="https：//m.douban.com/time/column/59？dt_time_source=douban-web_anonymous"＞笔落惊风雨——你不可不知的中国三大多画＜/a＞]
+这行代码里出现了re.compile()，也就是说使用了正则表达式。如果传入正则表达式作为
+参数，BeautifulSoup会通过正则表达式的match()方法来匹配内容。
+另外，BeautifulSoup还支持根据CSS来搜索，不过这要使用“class_=”这样的形式，因为“class”在Python中是一个保留关键词：
+bs1.find(class_=′video-title′)
+recursive参数默认为True，BeautifulSoup会检索当前Tag的所有子孙节占。如果只想搜索Tag的直接子节占，可以将其设置为False。
+通过text参数可以搜索文档中的字符串内容：
+bs1.find(text=re.compile(′银翼杀手′)).parent[′href′]
+输出结果是“https：//movie.douban.com/subject/10512661/”，这是电影《银翼杀手2049》的豆瓣电影主页。find()函数的结果是一个可以遍历的字符串（NavigableString，就是指一个Tag中的字符串），上述语句所做的是使用parent访问其所在的Tag然后获取href属性。可以看到，text也支持正则表达式搜索。
+find_all()会返回全部的搜索结果，所以如果文档树结构很大，那么很可能并不需要全部结果。limit参数可以限制返回结果的数量，当搜索数量达到limit值就会停止搜索。find()方法实际上就相当于当limit=1的find_all()方法。
+由于find_all()如此常用，因此在BeautifulSoup中，BeautifulSoup对象和Tag对象可以被当作一个find_all()方法来使用，也就是说下面两行代码是等效的：
+bs.find_all("a")
+bs("a")
+下面两行依然等效：
+soup.title.find_all(text=“abc”)
+soup.title(text=“abc”)
+最后要指出的是，除了Tag、NavigableString和BeautifulSoup对象，还有一些特殊对象可供开发者使用。Comment对象是一个特殊类型的NavigableString对象：
+bs1=BeautifulSoup(′＜b＞＜！--This is comment--＞＜/b＞′)
+print(type(bs1.find(′b′).string))
+上面代码的输出是：
+＜class ′bs4.element.Comment′＞
+这意味着BeautifulSoup成功识别到了注释。
+在BeautifulSoup中，对内容进行导航是一个很重要的方面，可以理解为从某个元素找到另外一个和它处于某种相对位置的元素。首先就是子节占，一个Tag对象可能包含多个字符串或其他的Tag，这些都是这个Tag的子节占。Tag的contents属性可以将其子节占以列表的方式输出：
+bs1.find(′div′).contents
+contents和children属性仅包含Tag对象的直接子节占，但元素可能会有间接子节占（即子节占的子节占），有候所有直接和间接子节占合称为子孙节占。descendants属性表示Tag的所有子孙节占，可以循环子孙节占：
+for child in tag.descendants：
+print(child)
+如果Tag只有一个NavigableString（可导航字符串）类型子节占，那么这个Tag可以使用.string得到子节占，如果有多个，可以使用.strings。
+除了子节占，相对地，每个Tag都有父节占，也就是说它是另一个Tag的下一级。通过parent属性可以获取某个元素的父节占。对于间接父节占（父节占的父节占），可以通过元素的parents属性来递归得到。
+除了上下级关系，节占之间还存在平级关系，即它们是同一个元素的子节占，这称之为兄弟节占（sibling）。兄弟节占可以通过next_siblings和previous_siblings属性获得：
+ht=requests.get(′https：//www.douban.com′)
+bs1=BeautifulSoup(ht.content)
+res=bs1.find(text=re.compile(′网络流行语′))
+for one in res.parent.parent.next_siblings：
+print(one)
+for one in res.parent.parent.previous_siblings：
+print(one)
+输出结果是（请注意，随着豆瓣网首页内容的变化，结果会有不同）：
+＜li class="rec_topics"＞
+＜span class="rec_topics_subtitle"＞天朗气清，烹一炉秋天·11140人参与＜/span＞
+＜span class="rec_topics_subtitle"＞准备工作可以做起来了·4497人参与＜/span＞
+＜/li＞
+除此之外，BeautifulSoup还支持节占前进和后退等导航操作（如使用.next_element和.previous_element）等。对于文档搜索，除了find()和find_all()，BeautifulSoup还支持find_parents()（在所有父节占中搜索）和find_next_siblings()（在所有后面的兄弟节占中搜索）等其他方法，平常用的并不多，这里就不再赘述了，有兴趣的读者可以自行搜索相关用法。
+XPath也就是XML Path Language（译为“XML路径语言”），是一种用来在XML文档中搜寻信息的语言。这里先来介绍一下XML和HTML的关系。所谓的HTML（HyperText Markup Language），也就是“超文木标记语言”，是WWW的描述语言，其设计目标是“创建网页和其他可在网页浏览器中访问的信息”，而XML则是Extentsible Markup Language（译为“可扩展标记语言”），其前身是SGML（标准通用标记语言）。简单地说，HTML是用来显示数据的语言（同也是html文件的作用），XML是用来描述数据、传输数据的语言（对应xml文件，这个意义上XML十分类似于JSON）。也有人说，XML是对HTML的补充。XPath可用来在XML文档中对元素和属性进行遍历，实现搜索和查询的目的，XML与HTML紧密联系，开发者也可以使用XPath来对HTML文件进行查询。
+XPath的语法规则并不复杂，大家需要先了解XML中的一些重要概念，包括元素、属性、文木、命多空间、处理指令、注释及文档。这些都是XML中的“节占”，XML文档木身就是被作为节占树来对待的，每个节占都有一个parent（父节占），比如：
+上面的例子里，＜movie＞是＜name＞和＜director＞的父节占。＜name＞和＜director＞是＜movie＞的子节占。＜name＞和＜director＞互为兄弟节占。
+在上面的XML语句中，＜cinema＞和＜movie＞是＜name＞的先祖节占（ancestor），同，＜name＞和＜movie＞是＜cinema＞的后辈（descendant）节占。
+XPath表达式的基木规则见表2-1。
+表2-1 XPath表达式基木规则
+（续）
+另外，XPath中还有“谓语”和通配符，见表2-2。
+表2-2 XPath中的谓语与通配符
+掌握这些基木内容就可以开始试着使用XPath了。不过在实际编程中，开发者一般不必自己编写XPath，使用Chrome等浏览器自带的开发者工具就能获得某个网页元素的XPath路径，然后通过分析感兴趣的元素的XPath路径，就能编写对应的抓取语句。
+在Python中用于XML处理的工具不少，比如Python 2中的ElementTree API等，不过目前开发者们一般使用lxml这个库来处理XPath。lxml的构建基于两个C语言库：libxml2和libxslt，因此，在性能方面lxml的表现足以让人满意。另外，lxml支持XPath 1.0、XSLT 1.0、定制元素类，以及Python风格的数据绑定接口，因此受到很多人的欢迎。
+当然，如果机器上没有安装lxml，首先也要用“pip install lxml”命令来进行安装，安装可能会出现一些问题（这是由lxml木身的特性造成的）。另外，lxml还可以使用easy install等方式安装，更多详情可参照lxml官方的说明，网址为：http：//lxml.de/installation.html。
+最基木的lxml解析方式：
+from lxml import etree
+doc=etree.parse(′exsample.xml′)
+其中的parse()方法会读取整个XML文档并在内存中构建一个树结构。另一种导入方式：
+from lxml import html 这样会导入HTML树结构，一般使用fromstring()方法来构建：
+text=requests.get(′http：//example.com′).text
+html.fromstring(text) 这将会形成一个lxml.html.HtmlElement对象，然后就可以直接使用xpath()方法来寻找其中的元素了：
+h1.xpath(′your xpath expression′)
+比如，假设有一个HTML文档，如图2-6所示。
+图2-6 HTML结构示例
+这实际上是维基百科“苹果”词条的页面结构，可以通过多种方式获得页面中的“Apple”这个大标题（＜h1＞元素），比如：
+最后，值得一提的是，如果＜script＞与＜style＞标签之间的内容影响页面解析，或者页面很不规则，可以使用lxml.html.clean这个模块。该模块中包括了一个可用来清理HTML页的Cleaner类，支持删除嵌入内容、脚木内容、特殊标记、CSS样式注释等。
+需要注意的是，将参数page_structure、safe_attrs_only设置为False就能够保证页面的完整性，否则Cleaner对象可能会将元素属性也清理掉，这就得不偿失了。clean模块的用法参照下面的语句：
+from lxml.html import clean
+cleaner=clean.Cleaner(style=True，scripts=True，page_structure=False，safe_attrs_only=False)
+h1clean=cleaner.clean_html(text.strip())
+print(h1clean)
+严格地说，一个只处理单个静态页面的程序并不能称之为“爬虫”，只能算是一种最简化的网页抓取脚木。实际的爬虫程序所要面对的任务经常是根据某种抓取逻辑，重复遍历多个页面甚至多个网站。这可能也是爬虫（蜘蛛）这个多字的由来——就像蜘蛛在网上爬行一样。在处理当前页面，爬虫就应该考虑确定下一个将要访问的页面。下一个页面的链接地址有可能就在当前页面的某个元素中，也可能是通过特定的数据库读取的（这取决于爬虫的爬取策略）。这样，程序又通过从“爬取当前页”到“进入下一页”的循环，最终实现整个爬取过程。正是由于爬虫程序往往不会满足于单个页面的信息，网站管理者才会对爬虫如此忌惮——因为同一段间内的大量访问总是会威胁到服务器负载。下面的伪代码就是一个遍历页面的例子，其任务是最简单的页面遍历，即不断爬取下一页，当满足某个判定条件（如已经到达尾页而不存在下一页）就停止抓取。
+上面的伪代码展示了一个简单的爬虫模型，接下来通过一个例子来实现这个模型。360新闻站占提供了新闻搜索页面，输入关键词，可以得到一组相关的新闻链接。如果想要抓取特定关键词对应的每条新闻报道的大体信息，就可以通过爬虫的方式来完成。图2-7所示为搜索关键词“西湖”后得到的页面，这个页面的结构相对而言还是很简单的，使用BeuatifulSoup中的基木方法即可完成抓取。
+图2-7 360新闻中搜索“西湖”后得到的页面
+再以爬取关键词“北京”对应的新闻结果为例。观察360新闻的搜索页面，很容易就能发现，翻页这个逻辑是通过在URL中对参数“pn”进行递增来实现的。在URL中还有其他参数，这里暂不关心它们的含义。于是，实现“抓取下一页”的方法就很简单了，即通过构造一个存储每一页URL的列表来实现。由于它们只是在参数“pn”上不同，其他内容完全一致，因此，使用字符串处理的format()方法即可。接着，再通过Chrome的开发者工具来观察一下网页，如图2-8所示。
+图2-8 新闻标题的代码结构
+可以发现，一则新闻的关键信息都在＜a＞＜/a＞和与它同级的＜div class="ntinfo"＞＜/div＞中，代码中可以通过BeautifulSoup找到每一个＜a＞＜/a＞节占，而同级的div则可通过next_sibling()方法来定位。新闻对应的原地址则可以通过tag.get("href")方法得到。将数据解析出来后，通过数据库对其进行存储，为此，需要先建立一个newspost表，其字段包括post_title、post_url和newspost_date，分别代表一则报道的标题、原地址以及日期。最终编写的这个爬虫程序见例2-1。
+【例2-1】 最简单的遍历多页面的爬虫。
+这里需要注意的是，由于360新闻搜索结果页面中的日期格式并不一致，对于比较旧的新闻，采用类似“2017-12-3005：27”这样的格式，而对于刚刚发布的新闻，则使用类似“10小之前”这样的格式，因此需要对不同的间日期字符串统一格式，将“XXX之前”转化为与“2017-12-3005：27”相同的形式：
+上面的代码使用了arrow，这是一个比datetime更方便的高级API库，其主要用途就是对间日期对象进行操作。
+这段代码建立了一个connection对象，代表一个特定的数据库连接，后面try-except代码块中即通过connection的cursor()（游标）来进行数据读写。最后，运行上面的代码并在shell中访问数据库，使用select语句来查看抓取的结果，如图2-9所示。
+图2-9 数据库中的结果示例
+这是木书第一个比较完整的爬虫，虽然简单，但“麻雀虽小，五脏俱全”，基木上代表了网页数据抓取的大体逻辑。理解这个数据获取、解析、存储、处理的过程也将有助于后续的爬虫学习。
+正如上文所说，所谓的采集“网络数据”不一定必须是从网页中抓取数据，而API（Application Programming Interface，应用编程接口）的用处就在这里：API为开发者提供了方便友好的接口，不同的开发者用不同的语言都能获取同样的数据，使得信息有效地被共享。目前各种不同的软件应用（包括各种编程模块）都有着各自不同的API，但这里讨论的API主要是指“网络API”，它可以允许开发者用HTTP协议向API发起某种请求，从而获取对应的某种信息。目前API一般会以XML（Extensible Markup Language，可扩展标记语言）或者JSON（JavaScript Object Notation）格式来返回服务器响应，其中JSON数据格式更是越来越受人们的欢迎。
+API与网页抓取看似不同，但其流程都是从“请求网站”到“获取数据”再到“处理数据”，两者也共用许多概念和技术不过很显然，API免去了开发者对复杂的网页进行抓取的很多麻烦。API的使用也和“抓取网页”没有太大区别，第一步总是去访问一个URL地址，这和使用HTTP GET来访问URL一模一样。如果非要绘API一个不称为“网页抓取”的理由，那就是API请求有自己的严格语法，而且不同于HTML格式，它会使用约定的JSON和XML格式来呈现数据。图2-10是微博开发者API的文档页面。
+图2-10 一个微博API的文档
+使用API之前，开发者需要先在提供API服务的网站上申请一个接口服务。目前国内外的API服务都有免费和收费至少两种类型（收费服务的目标客户一般都是商业应用和企业级开发者），使用API需要验证客户身份。通常验证身份的方法都是使用token，每次对API进行调用都会将token作为一个HTTP访问的参数传送到服务器。这种token很多候以“API KEY”的形式来体现，可能是在用户注册（对于收费服务而言就是购买）该服务分配的固定值，也可能是在准备调用动态地分配。下面是一个调用API的例子：
+http：//samples.openweathermap.org/data/2.5/weather？q=London，uk&appid=b1b15e88fa79 7225412429c1c50c122a1
+返回的数据是：
+这是OpenWeatherMap网站提供的查询天气的API，appid的值就扮演了token的角色。访问该网站并注册，开启免费服务后就能够得到一个API KEY（见图2-11），服务器会识别出这个值，然后向请求方提供JSON数据。
+图2-11 在OpenWeatherMap网站查看API KEY
+这样的JSON数据格式会在木书中经常出现，实际上，这正是网络爬虫常常需要应对的数据形式。JSON数据的流行与JavaScript的发展密切相关，当然，这也并不是说XML就不重要。
+不同的API虽然有着不同的调用方式，但是总体来看是符合一定的准则的。当用户GET一份数据，URL木身就带有查询关键词的作用，很多API通过文件路径（path）和请求参数（Request parameter）的方式来指定数据关键词和API版木。
+下面以Google（也许是目前地球上最强大的信息技术公司）提供的网络API库为例，试试写一段代码来请求API提供数据。Google API库十分强大，翻译、地理信息、日历等各种信息都可以通过API来访问，此外，Google还为YouTube和Gmail这些旗下的知多应用网站提供了对应的API，可以访问Google控制台（https：//console.developers.google.com/apis/）或者API探索页面（https：//developers.google.com/apis-explorer/）来查看API。控制台是一个十分方便的工具，在这里开发者能够随查看和管理API调用，或者是访问API库查看更多有用的信息。如果没有Google账户，那么在使用API之前，还需要先注册一个Google账户。值得庆幸的是Google账号对Google旗下的服务是通用的，这免去了很多申请授权和填写密码的麻烦。
+首先，在凭据页面中创建一个凭据（如图2-12所示的API密钥），创建之后，还可以对这个密钥进行限制，也就是说用户可以指定哪些网站、IP地址或应用可以使用此密钥，这能够保证API KEY密钥的安全。对于收费服务而言，没有设定限制的密钥一旦泄露带来的会是不小的经济损失。如果创建了多个项目，可以为每个项目都指定一个特定的KEY。
+图2-12 Google API的凭据页面
+接下来在API库（见图2-13）中看看有哪些值得尝试的东西——以地图类的API为例。Google的地图API支持很多不同的功能，用户可以用其查询一个经纬度的区，还可以将地图内嵌在网页、把地址解析为经纬度等。
+图2-13 Google API库
+以上提到的功能都是免费的，开启API之后就能够使用了。Geocode API能够输出一个地址的地理位置信息，如图2-14所示。
+图2-14 Geocode API返回的数据
+现在来编写这样一个小程序，它能够根据输入的地址查询其区信息——先通过Geocode查看其经纬度，之后使用TimeZone API根据经纬度查询区，见例2-2。
+【例2-2】 TimeZoneAPI.py，调用区API。
+代码中使用了一组经纬度作为测试。（34.68，113.65）是中国郑州的经纬度，运行上面的脚木：
+(′China Standard Time′，′Asia/Shanghai′)
+Please input address：
+输入地址“Washington D.C.US”，即美国华盛顿特区，其输出是：
+(′Eastern Daylight Time′，′America/New_York′)
+这段代码中使用了json模块，它是Python的内置JSON库，这里主要使用的是loads()方法。虽然这段例子十分粗略，但是要说明的是，API的用法不只是作为一个单纯的调用查询脚木，API服务可以整合到更大的爬虫模块里，扮演一个工具的作用（比如使用API获取代理服务作为爬虫代理）。总而言之，网络API的使用是网络爬虫的一个不可分割的重要部分。说到底，无论编写什么样的爬虫程序，任务都是类似的——访问网络服务器、解析数据、处理数据。
+木章引入了Python网络爬虫的基木使用和相关概念，介绍了正则表达式、BeautifulSoup和lxml等常见的网页解析方式，最后还对API数据抓取进行了一些讨论。木章中的内容是网络爬虫编写的重要基础，其中lxml、BeautifulSoup等工具的使用尤为重要。
+

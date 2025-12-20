@@ -1,0 +1,27 @@
+# Secrets
+config.ini
+config.json
+*.key
+*.pem
+.env
+
+# Logs
+*.log
+logs/
+
+# System
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+.trae/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/

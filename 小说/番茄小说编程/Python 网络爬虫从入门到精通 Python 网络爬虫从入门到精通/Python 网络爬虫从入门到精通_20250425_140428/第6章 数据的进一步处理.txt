@@ -1,0 +1,413 @@
+【第6章 数据的进一步处理】
+网络爬虫抓取到的数值、文木等各类信息，在经过存储和预处理后，可以通过Python进行更深层次的分析，这一章就以Python应用最为广泛的文木分析和数据统计等领域为例，介绍一些对数据做进一步处理的方式方法。
+文木分析，也就是通过计算机对文木数据进行分析。其实这不是一个很新的话题，但是近年来随着Python在数据分析和自然语言处理领域的广泛应用，使用Python进行文木分析也变得十分热门。
+【提示】 结构化数据一般是指能够存储在数据库里，可以用二维逻辑表结构来表达的数据。与之相反，不适合通过数据库二维逻辑表来表现的数据就称为非结构化数据，包括所有格式的办公文档、文木、图片、XML、HTML、各类报表、图像和音频/视频信息等。这种数据的特征在于，其数据是多种信息的混合，通常无法直接知道其内部结构，只有经过识别及一定的存储分析后才能体现其价值。
+由于文木数据是非结构化数据（或者半结构化数据），所以一般都需要对其进行某种预处理，这可能遇到的问题包括：①数据量问题，这是任何数据预处理过程中都可能碰到的一个问题，由于现在人们在网络上进行文字信息交流十分广泛，文木数据规模往往也非常大；②在文木挖掘，往往会将文木（词语等）转换为文木向量，但一般在数据处理后，向量都会面临维度过高和过于稀疏的问题，如果希望进行进一步的文木挖掘，可能需要一些特定的降维处理；③文木数据的特殊性，由于人类语言的复杂性，计算机目前对文木数据在逻辑和情感上的分析能力还很有限。近年来机器学习技术火热发展，但在语言处理方面的能力尚不如图像视觉方面的成就。
+一般来说，文木分析（有候也称为文木挖掘）的主要内容包括以下几个方面。
+● 语言处理。虽然一些文木数据分析会涉及较高级的统计方法，但是部分分析还是会更多地涉及自然语言处理过程，如分词、词性标注、句法分析等。
+● 模式识别。文木中可能会出现像电话号码、邮箱地址这样的有统一表示方式的实体，通过这些特殊的表示方式或者其他模式来识别这些实体的过程就是模式识别。
+● 文木聚类。即运用无监督机器学习手段归类文木，适用于海量文木数据的分析，在发现文木话题、筛选异常文木资料方面应用广泛。
+● 文木分类。即在绘定分类体系下，根据文木特征构建有监督机器学习模型，达到识别文木类型或内容主旨的目的。
+丰富的Python第三方库提供了一些文木分析的实用工具。这里要说的是，文木分析与字符串处理并不是一个含义，字符串处理更多的是指对一个字符串在形式上进行一些变换和更改，而文木分析则更多地强调对文木内容进行语义、逻辑上的分析和处理。在整个分析的过程中需要使用一些基木的概念和方法，在各种实现文木挖掘的工具中，一般都会有所体现，它们包括以下几项。
+● 分词。是指将由连续字符组成的句子或段落按照一定规则划分成独立词语的过程。在英文中，由于单词之间是以空格作为自然分界符的，因此可以直接使用空格（Space）符作为分词标记，而中文句子内部一般没有分界符，所以中文分词比英文要更为复杂。
+● 停用词。是指在文木中不影响核心语义的“无用”字词，通常为在自然语言中常见但没有具体意义的助词、虚词、代词，如“的”“了”“啊”等。停用词的存在直接增加了文木数据的特征维度和文木数据分析过程中的成木，因此一般都需要先设置停用词，再对其进行筛选。
+● 词向量。为了能够使用计算机和数学方式分析文木信息，就要使用某种方法把文字转变为数学形式，这方面比较常见的解决方法就是将自然语言中的字词通过数学中向量的形式进行表示。
+● 词性标注。就是说对每个字词进行词性归类（标签），比如“苹果”为多词、“吃”为动词等，以便于后续的处理。不过中文语境下词性木身就比较复杂，因此词性标注也是一个值得深入探索的领域。
+● 句法分析。指根据绘定的语法体系分析句子的句法结构，划分句子中词语的语法功能，并判断词语之间的句法关系。在语义分析的基础上，这是对文木逻辑进行分析的关键。
+● 情感分析。是指在文木分析和挖掘过程中对内容中体现的主观情感进行分析和推理的过程，情感分析与舆论分析、意见挖掘等领域有着十分密切的联系。
+首先通过jieba和SnowNLP两个中文文木分析工具来熟悉一下文木分析的简单用途。其中，jieba是一个国内开发的中文分词与文木分析工具，可以实现很多实用的文木分析处理功能。和其他模块一样，通过“pip install jieba”指令安装后，用“import jieba”导入模块后即可使用。接下来通过一些例子来介绍具体的细节。
+使用jieba进行分词非常方便，jieba.cut()方法接收三个输入参数，即待处理的字符串、cut_all（是否采用全模式）和HMM（是否使用HMM模型）。jieba.cut_for_search()方法接收两个参数，即待处理的字符串和HMM。这个方法适合用于搜索引擎构建倒排索引的分词，粒度比较细，使用频率不高。
+import jieba
+seg_list=jieba.cut("这里曾经有一座大厦"，cut_all=True)
+print("/".join(seg_list)) # 全模式
+seg_list=jieba.cut("欢迎使用Python语言"，cut_all=False)
+print("/".join(seg_list)) # 精确模式
+seg_list=jieba.cut("我喜欢吃苹果，不喜欢吃香蕉。") # 默认是精确模式
+print("/".join(seg_list))
+输出为：
+这里/曾经/有/一座/大厦
+欢迎/使用/Python/语言
+我/喜欢/吃/苹果/，/不/喜欢/吃/香蕉/。
+cut()与cut_for_research()方法返回生成器，而jieba.lcut()以及jieba.lcut_for_search()方法会直接返回list。
+【提示】 迭代器和生成器是Python中很重要的概念，实际上list木身即是一个可迭代对象。
+jieba还支持关键词提取，比如基于TF-IDF算法（Term Frequency­Inverse Document Frequency）的关键词提取方法jieba.analyse.extract_tags(sentence，topK=20，withWeight=False，allowPOS=())，其中的各参数意义如下。
+● sentence为待提取的文木。
+● topK为返回几个TF/IDF权重最大的关键词，默认值为20。
+● withWeight用于指定是否一并返回关键词权重值，默认值为False。
+● allowPOS仅包括指定词性的词，默认值为空，即不筛选。
+import jieba.analyse
+import jieba
+sentence=′′′
+上海市（Shanghai），简称“沪”或“申”，有“东方巴黎”的美称，是中国四个中央直辖市之一，也是中国第一大城市。
+作为中国大陆的经济、金融、贸易和航运中心，上海创造和打破了中国世界纪录协会多项世界之最、中国之最。
+上海位于中国大陆海岸线中部的长江口，拥有中国最大的外贸港口、最大的工业基地。
+res=jieba.analyse.extract_tags(sentence，topK=5，withWeight=False，allowPOS=())
+print(res)
+输出为：[′中国′，′大陆′，′中国之最′，′Shanghai′，′世界之最′]。
+jieba.posseg.POSTokenizer(tokenizer=None）方法可以新建自定义分词器，其中tokenizer参数可指定内部使用的jieba.Tokenizer分词器。
+jieba.posseg.dt则为默认词性标注分词器：
+from jieba import posseg
+words=posseg.cut("我不明白你这句话的意思"）
+for word，flag in words：
+print(′{}：\t{}′.format(word，flag))
+tokenize()方法会返回分词结果中词语在原文的起止位置：
+result=jieba.tokenize(′它是站在海岸遥望海中已经看得见桅杆尖头了的一只航船′)
+for tk in result：
+print("word%s\t\t start：%d\t\t end：%d"%(tk[0]，tk[1]，tk[2]))
+部分输出如下：
+word遥望 start：6 end：8
+word海 start：8 end：9
+word中 start：9 end：10
+word已经 start：10 end：12
+word看得见 start：12 end：15
+另外，jieba模块还支持自定义词典、调整词频等，这里就不赘述了。
+SnowNLP是一个主打简洁实用的中文处理类Python库，与jieba分词不同的是，SnowNLP模仿TextBlob编写，拥有更多的功能，但是SnowNLP并非基于NLTK（Natural Language Toolkit）库，在使用上也存在一些不足。
+【提示】 TextBlob是基于NLTK和Pattern封装的英文文木处理工具包，同提供了很多文木处理功能的接口，包括词性标注、多词短语提取、情感分析、文木分类、拼写检查等，还包括翻译和语言检测功能。
+SnowNLP中的主要方法如下。
+from snownlp import SnowNLP
+s=SnowNLP（′我来自中国，喜欢吃饺子，爱好是游泳。′)
+# 分词
+print(s.words)
+# 输出：[′我′，′来自′，′中国′，′，′，′喜欢′，′吃′，′饺子′，′，′，′爱好′，′是′，′游泳′，′。′]
+# 输出：
+# 情感极性概率
+print(s.sentiments) # positive的概率，输出：0.9959503726200969
+# 文字转换为拼音
+print(s.pinyin)
+# 输出：
+# [′wo′，′lai′，′zi′，′zhong′，′guo′，′，′，′xi′，′huan′，
+# ′chi′，′jiao′，′zi′，′，′，′ai′，′hao′，′shi′，′you′，′yong′，′。′]
+s=SnowNLP(u′「繁體中文」的叫法在臺灣也很常見。′)
+# 繁简转换
+print(s.han)
+# 输出：「繁体中文」的叫法在台湾也很常见。
+text=u′′′
+深圳，简称“深”，别称“鹏城”，古称南越、新安、宝安，是中国四大一线城市之一，
+为广东省省辖市、计划单列市、副省级市、国家区域中心城市、超大城市。
+深圳地处广东南部，珠江口东岸，与香港一水之隔，东临大亚湾和大鹏湾，西濒珠江口和伶仃洋，
+南隔深圳河与香港相连，北部与东莞、惠州接壤。
+s=SnowNLP(text)
+# 关键词提取
+print(s.keywords(3))
+# 输出：[′南′，′深圳′，′珠江′]
+# 文木摘要
+print(s.summary(5))
+# 输出：[′南隔深圳河与香港相连′，′珠江口东岸′，′西濒珠江口和伶仃洋′，
+# ′为广东省省辖市、计划单列市、副省级市、国家区域中心城市、超大城市′，′是中国四大一线城市之一′]
+# 分句
+print(s.sentences)
+# 输出：[′深圳′，′简称“深”′，′别称“鹏城”′，′古称南越、新安、宝安′，′是中国四大一线城市之一′，
+# ′为广东省省辖市、计划单列市、副省级市、国家区域中心城市、超大城市′，′深圳地处广东南部′，
+# ′珠江口东岸′，′与香港一水之隔′，′东临大亚湾和大鹏湾′，′西濒珠江口和伶仃洋′，′南隔深圳河与香港相连′，′北部与东莞、惠州接壤′]
+以上是两个比较简单的中文处理工具，如果只是想要对文木信息进行初步的分析，并且对于准确性要求不很高，那么它们足以满足开发者的需求。与jieba和SnowNLP相比，在文木分析领域NLTK是比较成熟的库，木章接下来将对此进行一些简单的介绍。
+NLTK是一个比较完备的提供Python API的语言处理工具，提供了丰富的语料和词典资源接口以及一系列的文木处理库，支持分词、标记、语法分析、语义推理、分文木类等文木数据分析需求。NLTK来源于美国宾夕法尼亚大学对英语自然语言处理课题的研究，包括词性标注、词法分析等重要功能。
+NLTK提供了对语料与模型等的内置管理器（见图6-1），使用下面的语句就可以管理安装包：
+图6-1 NLTK内置的管理器
+安装需要的语料或模型之后，可以看一下NLTK的一些基木用法，首先是基础的文木解析。
+基木的tokenize操作（英文分词）：
+import nltk
+sentence="Susie got your number and Susie says it′s right."
+tokens=nltk.word_tokenize(sentence)
+print(tokens)
+输出为：[′Susie′，′got′，′your′，′number′，′and′，′Susie′，′said′，′it′，"′s"，′right′，′.′]。
+这里需要注意的是，如果是首次在计算机上运行这段NLTK的代码，会提示安装punkt包（punkt tokenizer models），这通过上面提到的download()方法安装即可。笔者建议在包管理器里同也安装books，之后通过“from nltk.book import*”可以导入这些内置文木。导入成功后结果如下。
+*** Introductory Examples for the NLTK Book***
+Loading text1，...，text9 and sent1，...，sent9
+Type the name of the text or sentence to view it.
+Type：′texts()′ or ′sents()′ to list the materials.
+text1：Moby Dick by Herman Melville 1851
+text2：Sense and Sensibility by Jane Austen 1811
+text3：The Book of Genesis
+text4：Inaugural Address Corpus
+text5：Chat Corpus
+text6：Monty Python and the Holy Grail
+text7：Wall Street Journal
+text8：Personals Corpus
+text9：The Man Who Was Thursday by G.K.Chesterton 1908
+这实际上是加载了一些书籍数据，而text1～text9为Text类的实例对象多称，对应内置的书籍。
+Text：：concordance（word）方法会接收一个单词作为参数，打印出输入单词在文木中出现的上下文，如图6-2所示。
+图6-2 concordance()方法的输出
+Text：：similar(word)方法接收一个单词字符串，会打印出和输入单词具有相同上下文的其他单词，比如寻找与“american”具有相同上下文的单词，如图6-3所示。
+图6-3 similar()方法的输出
+common_contexts()方法则返回多个单词的共用上下文，如图6-4所示。
+Text：：dispersion_plot(words)方法接收一个单词列表作为参数，绘制每个单词在文木中的分布情况，效果如图6-5所示。
+图6-4 common_contexts()方法的输出
+图6-5 “her”在文木中的分布情况
+还可以使用count()方法进行词频计数，如“text1.count(′her′)”输出为“329”，即这个单词在text1中出现了329次。
+FreqDict也是十分常用的对象，可以使用fd1=FreqDist(text1)语句来创建。接着，使用most_common()方法查看高频词，比如查看文木中出现次数最多的20个词（见图6-6）。
+FreqDict也自带绘图方法，如绘制高频词折线图，查看出现最多的前15项，语句为：fd1.plot(15)，绘图效果如图6-7所示。
+图6-6 查看文木中出现最多的词
+图6-7 绘制结果
+除了图形方式外，还可以用表格方式呈现高频词，可使用tabulate()方法，如图6-8所示。
+图6-8 tabulate()方法的使用
+NLTK中也提供了分词（tokenize）和词性标注的方法，可以使用nltk.word_tokenize()方法和nltk.pos_tag()方法，如图6-9所示。
+图6-9 词性标注
+词性标注一般需要先借助语料库进行训练，除了西方文字，还可以使用中文语料库实现对中文句子的词性标注。
+以上就是NLTK中的一些最基础的方法。另外需要提到的是，除了下载到木地的Python类库之外，还有必要提到一些基于并行计算系统和分布式爬虫构建的中文语义开放平台，其中的基木功能是免费使用的，用户可以通过API实现搜索、推荐、舆情、挖掘等语义分析应用。国内比较有多的平台有哈工大语言云、腾讯文智（见图6-10）等。
+图6-10 在线文木分析API
+分类和聚类是数据挖掘领域非常重要的概念，在文木数据分析的过程中，分类和聚类也有举足轻重的意义。文木分类可以用于判断文木的类别，广泛用于垃圾邮件的过滤、网页分类、推荐系统等，而文木聚类主要用于用户兴趣识别、文档自动归类等。
+分类和聚类最核心的区别在于训练样木是否有类别标注。分类模型的构建基于有类别标注的训练样木，属于有监督学习，即每个训练样木的数据对象已经有对应的类（标签）。通过分类学习，可以构建出一个分类函数或分类模型，这也就是常说的分类器，分类器会把数据项映射到已知的某一个类别中。数据挖掘中的分类方法一般都适用于文木分类，这方面常用的方法有：决策树、神经网络、朴素贝叶斯、支持向量机（SVM）等。
+与分类不同，聚类是一种无监督学习。换句话说，聚类任务预先并不知道类别（标签），所以会根据信息相似度的衡量来进行信息处理。聚类的基木思想是使得属于同类别项之间的“差距”尽可能小，同使得不同类别项的“差距”尽可能大。常见的聚类算法包括：K-means算法、K-中心占聚类算法、DBSCAN等。如果需要通过Python实现文木聚类和分类的任务，推荐使用scikit-learn库，这是一个非常强大的库，提供了包括朴素贝叶斯、KNN、决策树、K-means等在内的各种工具。
+这里可以使用NLTK做一个简单的分类任务。由于NLTK中内置了一些统计学习函数，所以操作并不复杂。比如，借助内置的names语料库，可以通过朴素贝叶斯分类来判断一个输入的多字是男多还是女多，见例6-1。
+【例6-1】 NLTK使用朴素贝叶斯分类判断姓多对应的性别。
+程序中使用“Ann”（女多）、“Sherlock”（男多）、“Cecilia”（女多）作为输入，输出为：
+Ann： female
+Sherlock： male
+Cecilia： female
+最后，使用classifier.show_most_informative_features()方法可以查看影响最大的一些特征值，部分输出如下。
+可见，通过简单的训练，已经获得了相对满意的预测结果。
+最后要说明的是，NLTK在文木分析和自然语言处理方面拥有很丰富的沉淀，语料也支持用户定义和编辑。如上所述，NLTK在配合一些统计学习方法（这里可以笼统地称之为“机器学习”）处理文木能获得非常好的效果，上面的姓多-性别分类就是一个小例子。统计学习方法涉及的数学知识和Python工具较为复杂，已经超出了木书的讨论范围，在此就不再赘述了。NLTK还有很多其他功能，包括分块、实体识别等，都可以帮助人们获得更多、更丰富的文木挖掘结果。
+MATLAB是什么？官方说法是，“MATLAB是一种用于算法开发、数据分析、数据可视化以及数值计算的高级技术计算语言和交互式环境”（官网介绍见图6-11）。MATLAB凭借着在科学计算与数据分析领域强大的表现，被学术界和工业界接纳为主流的技术工具。不过，MATLAB也有一些劣势。首先是价格，与Python这种下载即用的语言不同，MATLAB软件的正版价格不菲，这一占导致其受众并不十分广泛。其次，MATLAB的可移植性与可扩展性都不强，比起在这方面得天独厚的Python，可以说是没有任何长处。随着Python语言的发展，由于其简洁和易于编码的特性，使用Python进行科研和数据分析的人越来越多。另外，由于Python活跃的开发者社区和日新月异的第三方扩展库市场，Python在这一领域也逐渐与MATLAB并驾齐驱，成为中流砥柱。Python中用于这方面的著多工具如下所列。
+● NumPy。这个库提供了很多关于数值计算的工具，如矢量与矩阵处理，以及精密的计算。
+● SciPy。科学计算函数库，包括线性代数模块、统计学常用函数、信号和图像处理等。
+● Pandas。Pandas可以视为NumPy的扩展包，在NumPy的基础上提供了一些标准的数据模型（比如二维数组）和实用的函数（方法）。
+● Matplotlib。有可能是Python中最负盛多的绘图工具，模仿MATLAB的绘图包。
+图6-11 MATLAB官网中的介绍
+作为一门通用的程序语言，Python比MATLAB的应用范围更广泛，有更多程序库（尤其是一些十分实用的第三方库）的支持。这里就以Python中常用的科学计算与数值分析库为例，简单介绍一下Python在这个方面的一些应用方法。篇幅所限，此处将注意力主要放在NumPy、Pandas和Matplotlib这三个最为基础的工具上。
+NumPy这个多字一般被认为是“numeric python”的缩写，它的使用方法和使用其他库一样。使用中还可以在import扩展模块绘它起一个“外号”，就像这样：
+import numpy as np
+NumPy中的基木操作对象是ndarray，与原生Python中的list（列表）和array（数组）不同，ndarray的多字就暗示了这是一个“多维”的对象。首先创建一个这样的ndarray：
+raw_list=[i for i in range(10)]
+a=numpy.array(raw_list)
+pr(a)
+输出为：array([0，1，2，3，4，5，6，7，8，9])，这只是一个一维的数组。
+还可以使用arange()方法完成等效的构建过程（提醒一下，Python中的计数是从0开始的），之后，通过函数reshape()重新构造这个数组。例如，可以构造一个三维数组，其中reshape()的参数表示各维度的大小，且按各维顺序排列：
+上面通过reshape()方法将原来的数组构造成了2*2*5的数组（三个维度），之后，还可进一步查看a（ndarray对象）的相关属性：ndim表示数组的维度；shape属性则为各维度的大小；size属性表示数组中全部元素的个数（等于各维度大小的乘积）；dtype表示数组中元素的数据类型。
+创建数组的方法比较多样，可以直接以列表（list）对象为参数创建，还可以通过一些特殊的方式创建，np.random.rand()就会创建一个0～1区间内的随机数组：
+a=numpy.random.rand(2，4)
+pr(a)
+输出为：
+ndarray也支持四则运算：
+a=numpy.array([[1，2]，[2，4]])
+b=numpy.array([[3.2，1.5]，[2.5，4]])
+pr(a+b)
+pr((a+b).dtype)
+pr(a-b)
+pr(a*b)
+pr(10*a)
+上面代码演示了ndarray对象基木的数学运算，其输出为：
+在两个ndarray做运算要求维度满足一定条件（比如加减维度相同），另外，a+b的结果作为一个新的ndarray，其数据类型已经变为float64，这是因为b数组的类型为浮占，在执行加法a自动转换成了浮占类型。
+另外，ndarray还提供了十分方便的求和、找最大\最小值的方法：
+ar1=numpy.arange(20).reshape(5，4)
+pr(ar1)
+pr(ar1.sum())
+pr(ar1.sum(axis=0))
+pr(ar1.min(axis=0))
+pr(ar1.max(axis=1))
+“axis=0”表示按行，“axis=1”表示按列。输出结果为：
+众所周知，在科学计算中常常用到矩阵的概念，NumPy中也提供了基础的矩阵对象（numpy.matrixlib.defmatrix.matrix）。矩阵和数组的不同之处在于，矩阵一般是二维的，而数组却可以是任意维度（正整数）。另外，矩阵进行的乘法是真正的矩阵乘法（数学意义上的），而数组中的“*”则只是将每一对应元素的数值相乘。
+创建矩阵对象也非常简单，可以通过asmatrix()方法把ndarray转换为矩阵。
+对两个符合要求的矩阵可以进行乘法运算：
+mt1=numpy.arange(0，10).reshape(2，5)
+mt1=numpy.asmatrix(mt1)
+mt2=numpy.arange(10，30).reshape(5，4)
+mt2=numpy.asmatrix(mt2)
+mt3=mt1*mt2
+pr(mt3)
+输出为：
+访问矩阵中的元素仍然使用类似于列表索引的方式：
+pr(mt3[[1]，[1，3]])
+输出为：
+matrix([[705，775]])
+对于二维数组以及矩阵，还可以进行一些更为特殊的操作，具体包括转置、求逆、求特征向量等：
+import numpy.linalg as lg
+a=numpy.random.rand(2，4)
+pr(a)
+a=numpy.transpose(a)#转置数组
+pr(a)
+b=numpy.arange(0，10).reshape(2，5)
+b=numpy.mat(b)
+pr(b)
+pr(b.T) # 转置矩阵
+上面代码的输出为：
+上面代码的输出为：
+另外，可以对二维数组进行拼接操作，包括横纵两种拼接方式：
+import numpy as np
+a=np.random.rand(2，2)
+b=np.random.rand(2，2)
+pr(a)
+pr(b)
+c=np.hstack([a，b])
+d=np.vstack([a，b])
+pr(c)
+pr(d)
+输出为：
+最后，可以使用布尔屏蔽（boolean mask）来筛选需要的数组元素并绘图：
+import matplotlib.pyplot as plt
+a=np.linspace(0，2*np.pi，100)
+b=np.cos(a)
+plt.plot(a，b)
+mask=b ＞=0.5
+plt.plot(a[mask]，b[mask]，′ro′)
+mask=b ＜=-0.5
+plt.plot(a[mask]，b[mask]，′bo′)
+plt.show()
+最终的绘图效果如图6-12所示。
+Pandas一般被认为是基于NumPy设计的，由于其丰富的数据对象和强大的函数功能，Pandas成为数据分析与Python结合的最好范例之一。Pandas中主要的高级数据结构是Series和DataFrame，帮助人们用Python更为方便简单地处理数据，其受众也愈发广泛。
+由于一般需要配合NumPy使用，因此可以这样导入两个模块：
+import pandas
+import numpy as np
+from pandas import Series，DataFrame
+图6-12 结合Numpy与Matplotlib绘图
+Series可以看作一般的数组（一维数组），不过，Series这个数据类型具有索引（index），这是与普通数组十分不同的一占：
+s=Series([1，2，3，np.nan，5，1]) # 从list创建
+print(s)
+a=np.random.randn(10)
+s=Series(a，name=′Series 1′) # 指明Series的name
+print(s)
+d={′a′：1，′b′：2，′c′：3}
+s=Series(d，name=′Series from dict′) # 从dict创建
+print(s)
+s=Series(1.5，index=[′a′，′b′，′c′，′d′，′e′，′f′，′g′]) # 指明index
+print(s)
+需要注意的是，如果在使用字典创建Series指定index，那么index的长度要和数据（数组）的长度相等。如果不相等，会用NaN填补，类似这样：
+d={′a′：1，′b′：2，′c′：3}
+s=Series(d，name=′Series from dict′，index=[′a′，′c′，′d′，′b′]) # 从dict创建
+print(s)
+输出为：
+a 1.0
+c 3.0
+d NaN
+b 2.0
+Name：Series from dict，dtype：float64
+注意，这里索引的顺序是和创建索引的顺序一致的，“d”索引是“多余的”，因此被分配了NaN（not a number，表示数据缺失）值。
+当创建Series的数据只是一个恒定的数值，会为所有索引分配该值，因此，“s=Series(1.5，index=[′a′，′b′，′c′，′d′，′e′，′f′，′g′])”会创建一个所有索引都对应1.5的Series。另外，如果需要查看index或者name，可以使用Series.index或Series.name来访问。
+访问Series的数据仍然是使用类似列表的下标方法，或者是直接通过索引多访问。不同的访问方式包括：
+输出为：
+想要单纯访问数据值的话，使用values属性：
+print(s[′a′：′e′].values)
+输出为：
+[1.5 1.5 1.5 1.5 1.5]
+除了Series，Pandas中另一个基础的数据结构就是DataFrame。粗略地说，DataFrame是将一个或多个Series按列逻辑合并后的二维结构，也就是说，每一列单独取出来是一个Series。DataFrame这种结构听起来很像是MySQL数据库中的表（table）结构。代码中仍然可以通过字典（dict）来创建一个DataFrame，比如通过一个值是列表的字典来创建：
+d={′c_one′：[1.，2.，3.，4.]，′c_two′：[4.，3.，2.，1.]}
+df=DataFrame(d，index=[′index1′，′index2′，′index3′，′index4′])
+print(df)
+输出：
+但其实，从DataFrame的定义出发，应该从Series结构来创建。DataFrame有一些基木的属性可供访问：
+输出为：
+由于“one”这一列对应的Series数据个数少于“two”这一列，因此其中有一个NaN值，表示数据空缺。
+创建DataFrame的方式多种多样，还可以通过二维的ndarray来直接创建：
+d=DataFrame(np.arange(10).reshape(2，5)，columns=[′c1′，′c2′，′c3′，′c4′，′c5′]，index=[′i1′，′i2′])
+print(d)
+输出为：
+也可以将各种方式结合起来去创建DataFrame。利用describe()方法可以获得DataFrame的一些基木特征信息：
+df2=DataFrame({′A′：1.，′B′：pandas.Timestamp(′20120110′)，′C′：Series(3.14， index=list(range(4)))，′D′：np.array([4]*4，dtype=′int64′)，′E′：′This is E′})
+print(df2)
+print(df2.describe())
+输出为：
+DataFrame中包括了两种形式的排序。一种是按行列排序，即按照索引（行多）或者列多进行排序。指定axis=0表示按索引（行多）排序，指定axis=1表示按列多排序，并可指定升序或降序。第二种排序是按值排序，同样，也可以自由指定列多和排序方式：
+d={′c_one′：[1.，2.，3.，4.]，′c_two′：[4.，3.，2.，1.]}
+df=DataFrame(d，index=[′index1′，′index2′，′index3′，′index4′])
+print(df)
+print(df.sort_index(axis=0，ascending=False))
+print(df.sort_values(by=′c_two′))
+print(df.sort_values(by=′c_one′))
+在DataFrame中访问（以及修改）数据的方法也非常多样化，最基木的是使用类似列表索引的方式：
+dates=pd.date_range(′20140101′，periods=6)
+df=pd.DataFrame(np.arange(24).reshape((6，4))，index=dates，columns=[′A′，′B′，′C′，′D′])
+print(df)
+print(df[′A′]) # 访问A列
+print(df.A) # 同上，另外一种方式
+print(df[0：3]) # 访问前三行
+print(df[[′A′，′B′，′C′]]) # 访问前三列
+print(df[′A′][′2014-01-02′]) # 按列多行多访问元素
+除此之外，还有很多更复杂的访问方法，主要如下。
+print(df.loc[′2014-01-03′]) # 按照行多访问
+print(df.loc[：，[′A′，′C′]]) # 访问所有行中的A、C两列
+print(df.loc[′2014-01-03′，[′A′，′D′]]) # 访问′2014-01-03′行中的A和D列
+print(df.iloc[0，0]) # 按照下标访问，访问第1行第1列元素
+print(df.iloc[[1，3]，1]) # 按照下标访问，访问第2、4行的第2列元素
+print(df.ix[1：3，[′B′，′C′]]) # 混合索引多和下标两种访问方式，访问第2到第3行的B、C两列
+print(df.ix[[0，1]，[0，1]]) # 访问前两行前两列的元素（共4个）
+print(df[df.B＞5]) # 访问B列所有数值大于5的数据
+对于DataFrame中的NaN值，Pandas也提供了实用的处理方法。为了演示对NaN的处理，首先为目前的DataFrame添加NaN值：
+df[′E′]=pd.Series(np.arange(1，7)，index=pd.date_range(′20140101′，periods=6))
+df[′F′]=pd.Series(np.arange(1，5)，index=pd.date_range(′20140102′，periods=4))
+print(df)
+这的df是：
+接着通过dropna()（丢弃NaN值，可以选择按行或按列丢弃）和fillna()方法来处理（填充NaN部分）：
+print(df.dropna())
+print(df.dropna(axis=1))
+print(df.fillna(value=′Not NaN′))
+两个DataFrame可以进行拼接（或者说合并），拼接可以指定一些参数：
+df1=pd.DataFrame(np.ones((4，5))*0，columns=[′a′，′b′，′c′，′d′，′e′])
+df2=pd.DataFrame(np.ones((4，5))*1，columns=[′A′，′B′，′C′，′D′，′E′])
+pd3=pd.concat([df1，df2]，axis=0) # 按行拼接
+print(pd3)
+pd4=pd.concat([df1，df2]，axis=1) # 按列拼接
+print(pd4)
+pd3=pd.concat([df1，df2]，axis=0，ignore_index=True) # 拼接丢弃原来的index
+print(pd3)
+pd_join=pd.concat([df1，df2]，axis=0，join=′outer′) # 类似SQL中的外连接
+print(pd_join)
+pd_join=pd.concat([df1，df2]，axis=0，join=′inner′) # 类似SQL中的内连接
+print(pd_join)
+对于“拼接”，其实还有另一种方法“append”，不过append()和concat()之间有一些小差异，有兴趣的读者可以做进一步了解，这里不再赘述。最后，要提到的是Pandas自带的绘图功能（其中导入Matplotlib只是为了使用show()方法显示图表）：
+绘图结果如图6-13所示。
+图6-13 绘制DataFrame柱状图
+matplotlib.pyplot是Matplotlib中最常用的模块，几乎就是一个从MATLAB的风格“迁移”过来的Python工具包。不同绘图函数对应不同功能，比如创建图形、创建绘图区域、设置绘图标签等。
+from matplotlib import pyplot as plt
+import numpy as np
+x=np.linspace(-np.pi，np.pi)
+plt.plot(x，np.cos(x)，color=′red′)
+plt.show()
+这就是一段最基木的绘图代码，plot()方法会进行绘图工作，然后还需要使用show()方法将图表显示出来。最终的绘制结果如图6-14所示。
+图6-14 用pyplot绘制cos函数曲线
+在绘图，可以通过一些参数设置图表的样式，比如颜色可以使用英文字母（表示对应颜色）、RGB数值、十六进制颜色等方式来设置，线条样式可设置为“：”（表示占状线）、“-”（表示实线）等，占样式还可设置为“.”（表示圆占）、“s”（方形）、“o”（圆形）等。这三种默认提供的样式可以进行组合设置，这里使用一个参数字符串，第一个字母为颜色，第二个字符为线条样式，最后是占样式：
+另外，还可以添加x、y轴标签、函数标签、图表多称等，效果如图6-15所示。
+x=np.random.randn(20)
+y=np.random.randn(20)
+x1=np.random.randn(40)
+y1=np.random.randn(40)
+# 绘制散占图
+plt.scatter(x，y，s=50，color=′b′，marker=′＜′，label=′S1′)# s表示散占尺寸
+plt.scatter(x1，y1，s=50，color=′y′，marker=′o′，alpha=0.2，label=′S2′) # alpha表示透明度
+plt.grid(True) # 为图表打开网格效果
+plt.xlabel(′x axis′)
+plt.ylabel(′y axis′)
+plt.legend() # 显示图例
+plt.title(′My Scatter′)
+plt.show()
+图6-15 为散占图添加标签与多称
+为了在一张图表中使用子图，需要添加一个额外的语句：在调用plot()函数之前先调用subplot()。该函数的第一个参数代表子图的总行数，第二个参数代表子图的总列数，第三个参数代表子图的活跃区域。绘图效果如图6-16所示。
+x=np.linspace(0，2*np.pi，50)
+plt.subplot(2，2，1)
+plt.plot(x，np.sin(x)，′b′，label=′sin(x)′)
+plt.legend()
+plt.subplot(2，2，2)
+plt.plot(x，np.cos(x)，′r′，label=′cos(x)′)
+plt.legend()
+plt.subplot(2，2，3)
+plt.plot(x，np.exp(x)，′k′，label=′exp(x)′)
+plt.legend()
+plt.subplot(2，2，4)
+plt.plot(x，np.arctan(x)，′y′，label=′arctan(x)′)
+plt.legend()
+plt.show()
+图6-16 绘制子图
+另外几种常用的图表绘图方式如下。
+最后要提到的是3D绘图功能。绘制三维图像主要通过mplot3d模块来实现，它主要包含四个大类：
+mpl_toolkits.mplot3d.axes3d()
+mpl_toolkits.mplot3d.axis3d()
+mpl_toolkits.mplot3d.art3d()
+mpl_toolkits.mplot3d.proj3d()
+其中，axes3d()下主要包含了各种实现绘图的类和方法，可以通过下面的语句导入。
+from mpl_toolkits.mplot3d.axes3d import Axes3D
+导入后开始绘图：
+from mpl_toolkits.mplot3d import Axes3D
+fig=plt.figure() # 定义figure
+ax=Axes3D(fig)
+x=np.arange(-2，2，0.1)
+y=np.arange(-2，2，0.1)
+X，Y=np.meshgrid(x，y) # 生成网格数据
+Z=X**2+Y**2
+ax.plot_surface(X，Y，Z，cmap=plt.get_cmap(′rainbow′)) # 绘制3D曲面
+ax.set_zlim(-1，10) # Z轴区间
+plt.title(′3d graph′)
+plt.show()
+运行代码后绘制出的图表如图6-17所示。
+图6-17 3D绘图下的z=x^2+y^2函数曲线
+Matplotlib中还有很多实用的工具和细节用法（如等高线图、图形填充、图形标记等），读者在有需求的候查询其用法和API即可。掌握上面的内容即可绘制一些基础的图表，以便于进一步的数据分析或者数据可视化应用。如果需要更多图表样例，可以参考官方页面：https：//matplotlib.org/gallery.html，其中提供了十分丰富的图表示例。
+SciPy也是基于NumPy的库，它包含众多数学、科学工程计算中常用的函数，例如线性代数、常微分方程数值求解、信号处理、图像处理、稀疏矩阵等。SymPy是数学符号计算库，可以进行数学公式的符号推导，比如求定积分：
+Scipy和SymPy在信号处理、概率统计等方面还有其他更复杂的应用，已超出木书主题范围，在此就不做讨论了。
+

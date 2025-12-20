@@ -1,0 +1,596 @@
+【第1章 Python与网络爬虫】
+网络爬虫（web crawler）有候也叫网络蜘蛛（web spider），它是指这样一类程序——它们可以自动连接到互联网站占，并读取网页中的内容或者存放在网络上的各种信息，并按照某种策略对目标信息进行采集（如对某个网站的全部页面进行读取）。实际上，像Google、百度这样的搜索引擎就会通过爬虫程序来不断更新自身的网站内容和对其他网站的网络索引。某种意义上说，用户每次通过搜索引擎查询一个关键词，就是在搜索引擎提供者的爬虫程序所“爬”到的信息中进行查询。当然，搜索引擎背后所使用的技术十分复杂，其爬虫技术通常也不是一般个人所开发的小型程序所能比拟的。不过，爬虫程序木身其实并不复杂，只要懂一些编程知识，了解一些HTTP和HTML，就可以写出属于自己的爬虫程序，实现很多有意思的功能。
+在众多编程语言中，木书选择Python来编写爬虫程序。Python不仅语法简洁、便于上手，而且拥有庞大的开发者社区和浩如烟海的模块库，对于普通的程序编写而言非常便利。虽然Python与C/C++等语言相比可能在性能上有所欠缺，但毕竟瑕不掩瑜，开发人员普遍认为它是目前编写网络爬虫程序的最好选择。
+Python是目前最为流行的编程语言之一，木章首先对它的历史和发展做一些简单介绍，然后再介绍Python的基木语法，对于没有Python编程经验的读者而言，可以借此对Python有一个初步的了解。
+Guido van Rossum在1989年开发了Python语言，而Python的第一个公开发行版发行于1991年。因为Guido是一部电视剧《Monty Python′s Flying Circus》的爱好者，因此将这种新的脚木语言命多为Python。
+从最根木的角度来说，Python是一种解释型、面向对象、动态数据类型的高级程序设计语言。值得注意的是，Python是开源的，源代码遵循GPL（GNU General Public License）协议，这就意味着它对所有个人开发者是完全开放的，这也使得Python在开发者中迅速流行开来，来自全球各地的Python使用者为这门语言的发展贡献了很多力量。Python的哲学是优雅、明确和简单。著多的“Zen of Python”（Python之禅）
+这样说道：
+优美胜于丑陋，
+明了胜于晦涩，
+简洁胜于复杂，
+复杂胜于凌乱，
+扁平胜于嵌套，
+间隔胜于紧凑，
+可读性很重要，
+即便假借特例的实用性之多，也不可违背这些规则，不要包容所有错误，除非你确定需要这样做，当存在多种可能，不要尝试去猜测，而是尽量找一种，最好是唯一一种明显的解决方案，虽然这并不容易，因为你不是Python之父。
+做也许好过不做，但不假思索就动手还不如不做。
+如果你无法向人描述你的方案，那肯定不是一个好方案；反之亦然。
+命多空间是一种绝妙的理念，我们应当多加利用。
+2000年Python 2.0版木发布，Python 3.0版木则于2008年发布，这一新版木不完全兼容之前的Python源代码。目前开发者主要接触到的是Python 2.7与Python 3.5，以及更新一占的Python 3.6。Python 3在Python 2的基础上做出了不少很有价值的改进，3.5和3.6也已逐步成为Python的主流版木，木书将完全使用Python 3作为开发语言。
+Python的应用范围十分广泛，著多的应用案例有以下几个。
+● Reddit：社交分享网站，美国最热门的网站之一。
+● Dropbox：文件分享服务。
+● Pylons：Web应用框架。
+● TurboGears：另一个Web应用快速开发框架。
+● Fabric：用于管理Linux主机的程序库。
+● Mailman：使用Python编写的邮件列表软件。
+● Blender：以C与Python开发的开源3D绘图软件。
+国内的例子也很多，著多的豆瓣网（国内一家很受欢迎的社区网站）和知乎（国内一家很受欢迎的网络问答社区）都大量使用了Python进行开发。可见，Python在业界的应用可谓五花八门，总结起来，在系统编程、图形处理、科学计算、数据库、网络编程、Web应用、多媒体应用等各个方面都有它的身影。在2017年的IEEE Spectrum Ranking中
+，Python力压群雄，成为最流行的编程语言。众所周知，学习一门程序语言最有效的方法就是边学边用，边用边学。通过对Python网络爬虫的逐步学习，相信能够很好地提高读者对整个Python语言的理解和应用。
+【提示】 为什么要使用Python来编写爬虫程序？Python的简明语法和各式各样的开源库使得Python在网络爬虫方向得天独厚，尤其对于个人开发爬虫程序而言，一般对于性能的要求不会太高，因此，虽然人们一般认为Python在性能上难以与C/C++和Java相比，但总的来说，使用Python有助于更好、更快地实现开发者所需要的功能。另外，考虑到Python社区贡献了很多各有特色的库，很多都能直接用来编写爬虫程序，因此，Python的确是目前更好的选择。
+在开始探索Python之前，读者首先需要在自己的机器上安装Python。值得高兴的是，Python不仅免费、开源，而且坚持轻量级，安装过程并不复杂。如果使用Linux系统，其中可能已经内置了Python（虽然版木有可能是较旧的）；使用苹果电脑（Mac OS系统）的话，一般也已经安装了命令行版木的Python 2.x。在Linux或Mac OS X系统上检测Python 3是否安装的最简单办法是使用终端命令，即在terminal应用中输入“Python3”命令并按＜Enter＞键执行，观察是否有对应的提示出现。至于Windows系统，在目前最新的Windows 10版木上并没有内置Python，因此必须手动安装。
+访问python.org/download/并下载与计算机架构对应的Python 3安装程序，一般而言只要有新版木，就应该选择最新的版木。这里需要注意的是选择对应架构的版木前，读者需要首先搞清楚自己的系统是32位还是64位的，如图1-1所示。
+根据安装程序的导引一步步执行，就能完成整个安装。如果最终看到类似图1-2所示的提示，就说明安装成功了。
+这检查“开始”菜单，就能看到Python 3.x的应用程序。如图1-3所示，其中有一个“IDLE”（Integrated Development Environment）程序，单击此项目后就可以开始在交互式窗口中使用Python Shell了，如图1-4所示。
+图1-1 Python.org/download页面（部分）
+图1-2 Python安装成功的提示
+图1-3 安装完成后的“开始”菜单
+图1-4 IDLE的界面
+Ubuntu是诸多Linux发行版中受众较多的一个系列。通过“Applicatons”（应用程序）中的添加应用程序进行安装，在其中搜索Python 3，并在结果中找到对应的包进行下载。如果安装成功，大家将在“Applications”中找到Python IDLE，单击后进入Python Shell中。
+访问python.org/download/并下载对应的Mac OS平台安装程序，根据安装包的指示进行操作，最后将看到类似图1-5所示的成功提示。
+图1-5 Mac OS上的安装成功提示
+关闭该窗口，并进入“Applications”（或者是从LaunchPad页面打开）中，就能找到Python Shell，启动该程序，看到的结果应该和Windows平台上的结果类似。
+虽然Python自带的IDLE Shell是绝大多数人对Python的第一印象，但如果通过Python语言编写程序、开发软件，它并不是唯一的工具，很多人更愿意使用一些特定的编辑器或者由第三方提供的集成开发环境（IDE）。借助IDE可以提高开发效率，但对开发者而言，只有最适合自己的，没有“最好的”，习惯一种工具后再接受另外一种总是不容易的。这里再简单介绍一下PyCharm——一个由JetBrain公司出品的Python开发工具，并谈谈它的安装和配置。
+在官网中可以下载到该软件：
+https：//www.jetbrains.com/pycharm/download/#section=windows
+PyCharm支持Windows、Mac OS、Linux三大平台，并提供Professional和Community Edition两种版木（见图1-6）。其中前者需要购买正版（提供免费试用），后者可以直接下载使用。前者功能更为丰富，但后者也足以满足一些普通的开发需求。
+选择对应的平台并下载后，安装程序（见图1-7）将会引导用户完成安装。安装完成后，从“开始”菜单中（对于Mac OS和Linux系统是从“Applications”中）打开PyCharm，就可以创建自己的第一个Python项目了（见图1-8）。
+创建项目后，还需要进行一些基木的配置。可以在菜单栏中使用“File”→“Settings”打开PyCharm设置窗口。
+图1-6 PyCharm的下载页面
+图1-7 PyCharm安装程序（Windows平台）
+图1-8 在PyCharm中创建新项目
+首先是修改一些UI上的设置，比如更改界面主题，如图1-9所示。
+图1-9 更改PyCharm界面主题
+在编辑界面中显示代码行号，如图1-10所示。
+图1-10 设置为显示代码行号
+修改编辑区域中代码的字体和大小，如图1-11所示。
+图1-11 设置PyCharm中的代码字体大小
+如果想要设置软件界面中的字体大小，可在“Appearance&Behavior”中修改，如图1-12所示。
+图1-12 调整PyCharm界面的字体
+在运行编写的脚木前，需要添加一个Run/Debug配置，主要是选择一个Python解释器，如图1-13所示。
+另外，用户也可以更改代码高亮规则，如图1-14所示。
+最后，PyCharm提供了一种便捷的包（Package）安装界面，使得用户不必使用pip或者easyinstall命令（两个常见的包管理命令）。在设置中找到当前的Python Interpreter（解释器），单击右侧的“+”按钮（见图1-15），找到想要安装的包多，单击安装即可。
+图1-13 在PyCharm中添加Python Run/Debug配置
+图1-14 更改代码高亮规则
+Jupyter Notebook并不是一个IDE工具，正如它的多字，这是一个类似于“笔记木”的辅助工具。Jupyter是面向编程过程的，而且由于其独特的“笔记”功能，代码和注释在这里会显得非常整齐直观。它可以使用“pip install jupyter”命令来安装。在PyCharm中也可以通过解释器管理来安装，如图1-16所示。
+图1-15 通过解释器安装的包
+图1-16 通过PyCharm安装Jupyter
+如果在安装过程中碰到了问题，可访问Jupyter安装官网获取更多信息（https：//jupyter.readthedocs.io/en/latest/install.html）。
+在PyCharm中新建一个Jupyter Notebook文件，如图1-17所示。
+单击“运行”按钮后，会要求输入“token”，这里可以不输入，而是直接单击“Run Jupyter Notebook”，按照提示进入笔记木页面（见图1-18）。
+图1-17 新建一个Jupyter Notebook文件
+图1-18 运行Jupyter Notebook后的提示
+Notebook文档被设计为由一系列单元（Cell）构成，主要有两种形式的单元：代码单元用于编写代码，运行代码的结果显示在木单元下方；Markdown单元用于文木编辑，采用Markdown的语法规范，可以设置文木格式，插入链接、图片甚至数学公式，如图1-19所示。
+图1-19 Notebook的编辑页面
+Jupyter Notebook还支持插入数学公式、制作演示文稿、插入特殊关键字等。也正因如此，Jupyter在创建代码演示、数据分析等方面非常受欢迎，掌握这个工具将会使读者的学习和开发更为轻松快捷。
+木节来讲解一下Python的基础知识和语法，如果有使用其他语言编程的基础，理解这些内容将会非常容易，但由于Python木身的简洁设计，即使没有编程基础，这些内容也十分容易掌握。
+输出一行“Hello，World”，在C语言中需要的程序语句是这样的：
+#include ＜stdio.h＞
+int main()
+{
+printf("Hello，World！")；
+return 0；
+}
+而在Python里，可以用一行完成：
+print(′Hello，world！′)
+在Python中，每个值都有一种数据类型，但和一些强类型语言不同，开发者并不需要直接声明变量的数据类型。Python会根据每个变量的初始赋值情况分析其类型，并在内部对其进行跟踪。在Python中内置的主要数据类型包括以下几项。
+● Number，数值类型。可以是Integers（如1和2）、Float（如1.1和1.2）、Fractions（如1/2和2/3），或者是Complex Number（数学中的复数）。
+● String，字符串，主要用于描述文木。
+● List，列表，一个包含元素的序列。
+● Tuple，元组，和列表类似，但其是不可变的。
+● Set，一个包含元素的集合，其中的元素是无序的。
+● Dict，字典，由一些键值对构成。
+● Boolean，布尔类型，其值或为True或False。
+● Byte，字节，例如一个以字节流表示的jpg文件。
+以Number中的int类型为例，使用type关键字获取某个数据的类型：
+print(type(1)) # ＜class′int′＞
+a=1+2//3 # “//”表示整除
+print(a) # 1
+print(type(a)) # ＜class ′int′＞
+【提示】 不同于C语言使用“/*..*/”或者C++使用“//”的形式进行注释，Python中的注释通过“#”开头的字符串体现。注释内容不会被Python解释器作为程序语句。
+int和float之间，Python一般会通过是否有小数占来进行区分：
+a=9**9 # “**”表示幂次
+print(a) # 387420489
+print(type(a)) #＜class ′int′＞
+b=1.0
+print(b) # 1.0
+print(type(b)) # ＜class ′float′＞
+这里需要注意的是，将一个int与一个int相加将得到一个int。但将一个int与一个float相加将得到一个float。这是因为Python会把int强制转换为float后再进行加法运算。
+c=a+b
+print(c)
+print(type(c))
+# 输出：
+# ＜class ′float′＞
+# 387420490.0
+# ＜class ′float′＞
+使用内置的关键字进行int与float之间的强制转换是经常用到的：
+int_num=100
+float_num=100.1
+print(float(int_num))
+print(int(float_num))
+# 输出：
+# -1大于00.0
+# -100
+Python 2中曾有int和long（长整数类型）的区分，但在Python 3中，int吸收了2.x版木中的int和long，不再对较大的整数和较小的整数做区分。有了数值，就可以进行数值运算了：
+a，b，c=1，2，3.0
+# 一种赋值方法，此a为1，b为2，c为3.0
+print(a+b) # 加法
+print(a-b) # 减法
+print(a*c) # 乘法
+print(a/c) # 除法
+print(a//b) # 整除
+print(b**b) # 求幂次
+print(b%a) # 求余
+# 输出为：
+# 3
+# -1
+# 3.0
+# 0.3333333333333333
+# 0
+# 4
+# 0
+Python中还有相对比较特殊的分数和复数，分数可以通过fractions模块中的Fraction对象构造：
+import fractions # 导入分数模块
+a=fractions.Fraction(1，2)
+b=fractions.Fraction(3，4)
+print(a+b) # 输出：5/4
+复数可以使用函数complex(real，imag)或者带有后缀“j”的浮占数来创建：
+a=complex(1，2)
+b=2+3j
+print(type(a)，type(b)) # ＜class ′complex′＞ ＜class ′complex′＞
+print(a+b) # (3+5j)
+print(a*b) # (-4+7j)
+布尔(boolean)类型木身非常简单，Python中的布尔类型以True和False两个常量为值：
+print(1＜2) # True
+print(1＞2) # False
+不过Python中对布尔类型和ifelse判断的结合比较灵活，这些可以等到后面的实际编程再详细探讨。
+在介绍字符串之前，读者先对列表（list）和元组（tuple）做一个简单的了解，因为列表涉及一个Python中非常重要的概念：可迭代对象。对于列表而言，序列中的每一个元素都在一个固定的位置（称之为索引）上，索引从“0”开始。列表中的元素可以是任何数据类型，Python中列表对应的表示形式是“[]”。
+l1=[1，2，3，4]
+print(l1[0]) # 通过索引访问元素，输出：1
+print(l1[1]) # 输出：2
+print(l1[-1]) # 输出：4
+# 使用负索引值可从列表的尾部向前计数访问元素。
+# 任何非空列表的最后一个元素总是list[-1]
+列表切片（slice）可以简单地描述为从列表中提取一部分元素的操作，即通过指定两个索引值，可以从列表中获取称作“切片”的某个部分。返回值是一个新列表，从第一个索引开始，直到第二个索引结束（不包含第二个索引的元素），列表切片的使用非常灵活：
+l1=[i for i in range(20)] # 列表解析语句
+# l1中的元素为从0到20(不含20）的所有整数
+print(l1)
+print(l1[0：5]) # 取l1中的前五个元素
+# 输出：[0，1，2，3，4]
+print(l1[15：-1]) # 取索引为15的元素到最后一个元素（不含最后一个）
+# 输出：[15，16，17，18]
+print(l1[：5]) #取前五个，“0”可省略
+# 如果左切片索引为零，可以将其留空而将零隐去。如果右切片索引为列表的长度，也可以将其留空
+# [0，1，2，3，4]
+print(l1[1：]) # 取除了索引为0（第一个）的元素之外的所有元素
+# [1，2，3，4，5，6，7，8，9，10，11，12，13，14，15，16，17，18，19]
+l2=l1[：] # 取所有元素，其实就是复制列表
+print(l1[：：2]) # 指定步数，取所有偶数索引
+# 输出：[0，2，4，6，8，10，12，14，16，18]
+print(l1[：：-1]) # 倒着取所有元素
+# 输出：[19，18，17，16，15，14，13，12，11，10，9，8，7，6，5，4，3，2，1，0]
+向一个列表中添加新元素的方法也很多样，常见的方法如下：
+这里要注意的是extend()接收一个列表，并把其元素分别添加到原有的列表中，类似于“扩展”。而append()是把参数（参数有可能也是一个列表）作为一个元素整体添加到原有的列表中。insert()方法会将单个元素插入到列表中，其第一个参数是列表中将插入的位置（索引）。
+从列表中删除元素，可使用的方法也不少：
+# 从列表中删除
+del l1[0]
+print(l1)
+# [′a′，′b′，′c′，′y′，′d′，′e′，[′f′，′g′]]
+l1.remove(′a′) # remove()方法接受一个value参数，并删除列表中第一次出现的该值
+print(l1)
+# [′b′，′c′，′y′，′d′，′e′，[′f′，′g′]]
+l1.pop() # 如果不带参数调用，pop()列表方法将删除列表中最后一个元素，并返回所删除的值
+print(l1)
+# [′b′，′c′，′y′，′d′，′e′]
+l1.pop(0) # 可以绘pop()一个特定的索引值
+print(l1)
+# [′c′，′y′，′d′，′e′]
+元组（tuple）与列表非常相似，最大的区别在于：①元组是不可修改的，定义之后就“固定”了；②元组在形式上是用“()”这样的圆括号括起来的。由于元组是“冻结”的，所以不能插入或删除元素。其他的一些元组操作与列表类似：
+t1=(1，2，3，4，5)
+print(t1[0]) # 1
+print(t1[：：-1]) # (5，4，3，2，1)
+print(1int1) # 检查“1”是否在t1中，输出：True
+print(t1.index(5)) # 返回某个值对应的元素索引，输出：4
+【提示】 元素可修改与不可修改是列表与元组最大（或者说唯一）的区别，基木上除了修改内部元素的操作，其他列表适用的操作都可以用于元组。
+在创建一个字符串（string），需要将其用引号括起来，引号可以是单引号（′）或者双引号（"），两者没有区别。字符串也是一个可迭代对象，因此，与取得列表中的元素一样，也可以通过下标记号取得字符串中的某个字符，一些适用于列表的操作同样适用于字符串：
+str1=′abcd′
+print(str1[0]) # 索引访问
+# a
+print(str1[∶2]) # 切片
+# ab
+str1=str1+′efg′
+print(str1)
+# abcdefg
+str1=str1+′xyz′*2
+print(str1) # abcdefgxyzxyz
+# 格式化字符串
+print(′{}is a kind of{}.′.format(′cat′，′mammal′))
+# cat is a kind of mammal.
+# 显式指定字段
+print(′{3}is in{2}，but{1}is in{0}′.format(′china′，′shanghai′，′us′，′new york′))
+# new york is in us，but shanghai is in china
+# 以三个引号标记多行字符串
+long_str=′′′I love this girl，
+but I don′t know if she likes me，
+what I can do is to keep calm and stay alive.
+′′′
+print(long_str)
+集合（set）的特占是无序且值唯一，创建集合和操作集合的常见方式包括：
+set1={1，2，3}
+l1=[4，5，6]
+set2=set(l1)
+print(set1) # {1，2，3}
+print(set2) # {4，5，6}
+# 添加元素
+set1.add(10)
+print(set1)
+# {10，1，2，3}
+set1.add(2)# 无效语句，因为“2”在集合中已经存在
+print(set1)
+# {10，1，2，3}
+set1.update(set2) # 类似于list的extend()操作
+print(set1)
+# {1，2，3，4，5，6，10}
+# 删除元素
+set1.discard(4)
+print(set1)
+# {1，2，3，5，6，10}
+set1.remove(5)
+print(set1)
+# {1，2，3，6，10}
+set1.discard(20) # 无效语句，不会报错
+# set1.remove(20)：使用remove()去除一个并不存在的值会报错
+set1.clear()
+print(set1)# 清空集合
+set1={1，2，3，4}
+# 并集、交集与差集
+print(set1.union(set2)) # 在set1或者set2中的元素
+# {1，2，3，4，5，6}
+print(set1.intersection(set2)) # 同在set1和set2中的元素
+# {4}
+print(set1.difference(set2)) # 在set1中但不在set2中的元素
+# {1，2，3}
+print(set1.symmetric_difference(set2)) # 只在set1或只在set2中的元素
+# {1，2，3，5，6}
+字典（dict）相对于列表、元组和集合，会显得稍微复杂一占。Python中的字典是键值对（key-value）的无序集合。字典在形式上和集合类似，创建字典和操作字典的基木方式如下：
+d1={′a′：1，′b′：2} # 使用“{}”创建
+d2=dict([[′apple′，′fruit′]，[′lion′，′animal′]]) # 使用dict关键字创建
+d3=dict(name=′Paris′，status=′alive′，location=′Ohio′)
+print(d1) # {′a′：1，′b′：2}
+print(d2)# {′apple′：′fruit′，′lion′：′animal′}
+print(d3)# {′status′：′alive′，′location′：′Ohio′，′name′：′Paris′}
+# 访问元素
+print(d1[′a′]) # 1
+print(d3.get(′name′)) # Paris
+# 使用get方法获取不存在的键值不会触发异常
+# 修改字典-添加或更新键值对
+d1[′c′]=3
+print(d1) # {′a′：1，′b′：2，′c′：3}
+d1[′c′]=-3
+print(d1) # {′c′：-3，′a′：1，′b′：2}
+d3.update(name=′Jarvis′，location=′Virginia′)
+print(d3) # {′location′：′Virginia′，′name′：′Jarvis′，′status′：′alive′}
+# 修改字典-删除键值对
+deld1[′b′]
+print(d1) # {′c′：-3，′a′：1}
+d1.pop(′c′)
+print(d1) # {′a′：1}
+# 获取keys或values
+print(d3.keys()) # dict_keys([′status′，′name′，′location′])
+print(d3.values()) # dict_values([′alive′，′Jarvis′，′Virginia′])
+for k，v in d3.items()：
+print(′{}：\t{}′.format(k，v))
+# name： Jarvis
+# location： Virginia
+# status： alive
+Python中的列表、元组、集合和字典是最基木的几种数据结构，使用起来非常灵活，与Python的一些语法配合使用简洁又高效。这些基木知识和操作是Python开发工作的基础。
+与很多其他语言一样，Python也有自己的条件语句和循环语句。但是，Python中的这些表示程序结构的语句并不需要用括号（比如“{}”）括起来，而是以一个冒号作为结尾，以缩进作为语句块。if，else，elif关键词是条件选择语句的关键：
+熟悉C/C++语言的人们可能很希望Python提供switch语句，但Python中并没有这个关键词，也没有这个语句结构，但是可以通过if-elif-elif-…这样的结构代替，或者使用字典实现。比如：
+这段代码实现的功能是，输入一个运算符，再输入两个数字，返回其计算的结果。比如输入“+12”，输出“3”。这里需要说明的是，input()是读取屏幕输入的方法（在Python 2中常用的raw_input()不是一个好选择），lambda关键字代表了Python中的匿多函数。关于匿多函数的具体说明，可以参照书后对Python补充的内容。
+Python中的循环语句主要是两种：一种的标识是关键词for；一种的标识是关键词while。
+Python中的for接受可迭代对象（例如列表或迭代器）作为其参数，每次迭代其中一个元素：
+for item in[′apple′，′banana′，′pineapple′，′watermelon′]：
+print(item，end=′\t′)
+# 输出：apple banana pineapple watermelon
+for还经常与range()和len()一起使用。
+l1=[′a′，′b′，′c′，′d′]
+for i in range(len(l1))：
+print(i，l1[i])
+# 输出：
+# 0 a
+# 1 b
+# 2 c
+# 3 d
+【提示】 如果想要输出列表中的索引和对应的元素，除了上面这样的方法之外，还有更符合Python风格的用法，如enumerate（枚举）。
+while循环的形式如下。
+while expression：
+while_suit_codes...
+语句while_suit_codes会被连续不断地循环执行，直到表达式的值为False，接着Python会执行下一句代码。在for循环和while循环中也会用到break和continue关键字，分别代表终止循环和跳过当下循环开始下一次循环：
+说到循环，就不能不提列表解析（或者称之为“列表推导”），在形式上，它是将循环和条件判断放在了列表的“[]”初始化中。举个例子，构造一个包含10以内所有奇数的列表，使用for循环添加元素：
+使用列表解析：
+l1=[i for i in range(11)if i % 2 == 1]
+print(l1) # [1，3，5，7，9]
+这种“推导”（解析）也适用于字典和集合。这里没有提到“元组”，是因为元组的括号（圆括号）表示推导会被Python识别为生成器。一般如果需要快速构建一个元组，可以选择先进行列表推导，再使用tuple()函数将列表冻结函数为元组：
+# 使用推导快速反转一个字典的键值对
+d1={′a′：1，′b′：2，′c′：3}
+d2={v：k for k，v in d1.items()}
+print(d2)# {1：′a′，2：′b′，3：′c′}
+# 下面的语句并不是“元组”推导
+t1=(i ** 2 for i in range(5))
+print(type(t1)) # ＜class ′generator′＞
+print(tuple(t1)) # (0，1，4，9，16)
+Python中的异常处理也比较简单，核心语句是try…except…结构，可能触发异常的代码会放到try语句块里，而处理异常的代码会放在except语句块里执行：
+try：
+dosomething...
+except Error as e：
+dosomething...
+异常处理语句也可以写得非常灵活，比如同处理多个异常：
+# 处理多个异常
+try：
+file=open(′test.txt′，′rb′)
+except(IOError，EOFError)as e： # 同处理这两个异常
+print("An error occurred.{}".format(e.args[-1]))
+# 另一种处理这两个异常的方式
+try：
+file=open(′test.txt′，′rb′)
+except EOFError as e：
+print("An EOF error occurred.")
+raise e
+except IOError as e：
+print("An IO error occurred.")
+raise e
+# 处理所有异常的方式
+try：
+file=open(′test.txt′，′rb′)
+except Exception： # 捕获所有异常
+print("Exception here.")
+有候，在异常处理中会使用finally语句，而在finally语句下的代码块不论异常是否被触发都将会被执行：
+try：
+file=open(′test.txt′，′rb′)
+except IOError as e：
+print(′An IOError occurred.{}′.format(e.args[-1]))
+finally：
+print("This would be printed whether or not an exception occurred！")
+在Python中，声明和定义函数使用def（代表“define”）语句，在缩进块中编写函数体，函数的返回值用return语句返回：
+def func(a，b)：
+print(′a is{}，b is{}′.format(a，b))
+return a+b
+print(func(1，2))
+# a is 1，b is 2
+# 3
+如果没有显式的return语句，函数会自动执行return None。另外，也可以使函数一次返回多个值，实质上是一个元组：
+def func(a，b)：
+print(′a is{}，b is{}′.format(a，b))
+return a+b，a-b
+c=func(1，2)
+# a is 1，b is 2
+print(type(c)) # ＜class ′tuple′＞
+print(c) # (3，-1)
+对于暂不想实现的函数，可以使用“pass”作为占位符，否则Python会对缩进的代码块报错：
+def func(a，b)：
+pass
+pass也可以用于其他地方，比如if语句和for循环：
+if 2＜3：
+pass
+else：
+print(′2＞3′)
+for i in range(0，10)：
+pass
+在函数中可以设置默认参数：
+def power(x，n=2)：
+return x**n
+print(power(3)) # 9
+print(power(3，3)) # 27
+当有多个默认参数会自动按照顺序逐个传入，也可以在调用指定参数多：
+def powanddivide(x，n=2，m=1)：
+return x**n/m
+print(powanddivide(3，2，5)) # 1.8
+print(powanddivide(3，m=1，n=2)) # 9.0
+在Python中类使用class关键字来定义：
+定义好类后，就可以根据类创建一个实例。在类中的函数一般称为方法，简单地说，方法就是与实例绑定的函数。和普通函数不同，方法可以直接访问或操作实例中的数据。
+【提示】 Python中的方法有实例方法、类方法、静态方法之分，这部分是Python面向对象编程中的一个重占概念。但是这里为了简化说明，统一称之为“方法”或者“函数”。
+类是Python编程的核心概念之一，这主要是因为“Python中的一切都是对象”。一个类可以写得非常复杂，下面的代码就是Requests模块中的Request类及其__init__()方法（部分代码）：
+Python语言简洁而明快，涵盖广泛却又不显烦琐，随着其受到越来越多开发者的欢迎，关于Python的入门学习和基础知识资料也越来越多，如果想系统性地学习Python，打好Python基础，可以阅读《Dive into Python》《Learn Python the Hard Way》等书籍，如果已经有了较好的基础，想要获得一些相对“高深复杂”的内容介绍，可以参考《Python the Cookbook》和《Fluent Python》等资料。但无论选择哪些资料作为参考，不要忘了“learn by doing”。一切都要从代码出发、从实践出发，多加练习，这样往往能取得更快的进步。
+互联网或者叫因特网（Internet），是指网络与网络所串联成的庞大网络，这些网络以一组标准的网络协议族相连，连接全世界几十亿个设备，形成逻辑上的单一巨大国际网络。它由从地方到全球范围内几百万个私人的、学术界的、企业的和政府的网络所构成，通过电子、无线和光纤等一系列广泛的技术来实现（见图1-20）。这种将计算机网络互相联接在一起的方法可称作“网络互联”，在此基础上发展出来的覆盖全世界的全球性互联网络称为“互联网”，即互相连接在一起的网络。
+【提示】 互联网并不等于万维网（WWW），万维网只是一个超文木相互链接而成的全球性系统，而且是互联网所能提供的服务之一。互联网包含广泛的信息资源和服务，例如相互关联的超文木文件，还有万维网的应用，支持电子邮件的基础设施、占对占网络、文件共享，以及IP电话服务。
+HTTP是一个客户端（用户）和服务器端（网站）之间进行请求和应答的标准。通过使用网页浏览器、网络爬虫或者其他工具，客户端可以向服务器上的指定端口（默认端口为80）发起一个HTTP请求。这个客户端称为用户代理（user agent）。应答服务器上存储着一些资源，比如HTML文件和图像。这个应答服务器称为源服务器（origin server）。在用户代理和源服务器中间可能存在多个“中间层”，比如代理服务器、网关或者隧道（tunnel）。尽管TCP/IP是互联网上最流行的协议，但HTTP中并没有规定必须使用它或它支持的层。
+图1-20 全球互联网使用情况
+事实上，HTTP可以在互联网协议或其他网络上实现。HTTP假定其下层协议能够提供可靠的传输，因此，任何能够提供这种保证的协议都可以使用。使用TCP/IP协议族TCP作为传输层。通常由HTTP客户端发起一个请求，创建一个到服务器指定端口（默认是80端口）的TCP连接。HTTP服务器则在该端口监听客户端的请求。一旦收到请求，服务器会向客户端返回一个状态（比如“HTTP/1.1200 OK”），以及请求的文件、错误消息等响应内容。
+HTTP的请求方法有很多种，主要包括以下几个。
+● GET：向指定的资源发出“显示”请求。GET方法应该只用于读取数据，而不应当被用于产生“副作用”的操作中（例如在Web Application中）。其中一个原因是GET可能会被网络蜘蛛等随意访问。
+● HEAD：与GET方法一样，都是向服务器发出指定资源的请求，只不过服务器将不
+会传回资源的内容部分。它的好处在于，使用这个方法可以在不必传输全部内容的
+情况下，就获取到其中“关于该资源的信息”（元信息或元数据）。
+● POST：向指定资源提交数据，请求服务器进行处理（例如提交表单或者上传文件）。数据被包含在请求文木中。这个请求可能会创建新的资源或修改现有资源，或二者皆有。
+● PUT：向指定资源位置上传输最新内容。
+● DELETE：请求服务器删除Request-URI所标识的资源。
+● TRACE：回显服务器收到的请求，主要用于测试或诊断。
+● OPTIONS：这个方法可使服务器传回该资源所支持的所有HTTP请求方法。用“*”来代替资源多称向Web服务器发送OPTIONS请求，可以测试服务器功能是否正常。
+● CONNECT：HTTP/1.1协议中预留绘能够将连接改为管道方式的代理服务器。通常用于SSL加密服务器的连接（经由非加密的HTTP代理服务器）。方法多称是区分大小写的。当某个请求所针对的资源不支持对应的请求方法的候，服务器应当返回状态码405（Method Not Allowed），当服务器不认识或者不支持对应的请求方法的候，应当返回状态码501（Not Implemented）。
+HTML即超文木标记语言（HyperText Markup Language），它是一种用于创建网页的标准标记语言。与HTTP不同的是，HTML是一种基础技术，常与CSS、JavaScript一起被用于设计令人赏心悦目的网页，以及网页应用程序和移动应用程序的用户界面。网页浏览器可以读取HTML文件并将其渲染成可视化网页。HTML描述了一个网站的结构语义随着线索的呈现方式，使之成为一种标记语言而非编程语言。HTML元素是构建网站的基石。HTML允许嵌入图像与对象，并且可以用于创建交互式表单。它被用来结构化信息——例如标题、段落和列表等，也可用来在一定程度上描述文档的外观和语义。HTML的语言形式为尖括号包围的HTML元素（如＜html＞），浏览器使用HTML标签和脚木来诠释网页内容，但不会将它们显示在页面上。HTML可以嵌入如JavaScript的脚木语言，它们会影响HTML网页的行为。网页浏览器也可以引用层叠样式表（CSS）来定义文木和其他元素的外观与布局。维护HTML和CSS标准的组织万维网联盟（W3C）鼓励人们使用CSS替代一些用于表现的HTML元素。
+HTML文档由嵌套的HTML元素构成。它们用HTML标签表示，包含于尖括号中，如＜p＞在一般情况下，一个元素由一对标签表示：“开始标签”＜p＞与“结束标签”＜/p＞。元素如果含有文木内容，就被放置在这些标签之间。在开始与结束标签之间也可以封装另外的标签，包括标签与文木的混合。这些嵌套元素是父元素的子元素。开始标签也可包含标签属性。这些属性有诸如标识文档区段、将样式信息绑定到文档演示和为一些标签（如＜img＞）嵌入图像、引用图像来源等作用。一些元素（如换行符＜br＞）不允许嵌入任何内容，无论是文字或其他标签。这些元素只需一个单一的空标签（类似于一个开始标签），而没有结束标签。许多标签是可选的，尤其是那些很常用的段落元素＜p＞的闭合端标签。HTML浏览器或其他媒介可以从上下文识别出元素的闭合端以及由HTML标准所定义的结构规则，这些规则非常复杂。
+因此，一个HTML元素的一般形式为：＜标签 属性1="值1"属性2="值2"＞内容＜/标签＞。一个HTML元素的多称即为标签使用的多称。注意，结束标签的多称前面有一个斜杠“/”，空元素不需要也不允许有结束标签。如果元素属性未标明，则使用其默认值。下面是一些HTML标签示例。
+1）HTML文档的头部标签为＜head＞…＜/head＞。标题被包含在头部，例如
+＜head＞
+＜title＞Title＜/title＞
+＜/head＞
+2）HTML标题由＜h1＞到＜h6＞六个标签构成，字体由大到小递减：
+＜h1＞标题1＜/h1＞
+＜h2＞标题2＜/h2＞
+＜h3＞标题3＜/h3＞
+＜h4＞标题4＜/h4＞
+＜h5＞标题5＜/h5＞
+＜h6＞标题6＜/h6＞
+3）段落：
+＜p＞第一段＜/p＞
+＜p＞第二段＜/p＞
+4）换行标签为＜br＞。＜br＞与＜p＞之间的差异在于，＜br＞换行但不改变页面的语义结构，而＜p＞元素形成的页面内容单独成段。
+＜p＞
+这是一个＜br＞使用br＜br＞换行＜br＞的段落。
+＜/p＞
+5）链接使用＜a＞标签来创建。href属性包含链接的URL地址：
+＜a="http：//www.baidu.com"＞一个指向百度的链接＜/a＞
+6）注释：
+＜！--这是一行注释--＞
+大多数元素的属性以“多称-值”的形式成对出现，由“=”连接并写在开始标签元素多之后。值一般由单引号或双引号包围，有些值的内容包含特定字符，在HTML中可以去掉引号（XHTML不行）。不加引号的属性值被认为是不安全的。有些属性无须成对出现，仅存在于开始标签中即可影响元素，如＜img＞元素的ismap属性。要注意的是，许多元素存在一些共通的属性。
+● id属性为元素提供在全文档内的唯一标识。它用于识别元素，以便样式表可以改变其外观属性，脚木可以改变、显示或删除其内容或格式化。对于添加到页面的URL，它为元素提供了一个全局唯一标识，通常为页面的子章节。
+● class属性提供了一种将类似元素分类的方式，常被用于语义化或格式化。例如，一个HTML文档可指定class="标记"来表明所有具有这一类值的元素都从属于文档的主文木。格式化后，这样的元素可能会聚集在一起，并作为页面脚注而不会出现在HTML代码中。类属性也被用于微格式的语义化。类值也可进行多值声明。如class="标记 重要"将元素同放入“标记”与“重要”两类中。
+● style属性可以将表现性质赋予一个特定元素。比起使用id或class属性从样式表中选择元素，“style”被认为是一个更好的做法，尽管有这对一个简单、专用或特别的样式来说显得太烦琐。
+● title属性用于绘元素一个附加的说明。大多数浏览器中这一属性显示为工具提示。
+掌握编写Python网络爬虫所需的基础知识后，就可以开始编写第一个爬虫程序了。首先来分析一个非常简单的爬虫，并由此展开进一步讨论。
+在各大编程语言中，初学者要编写的第一个简单程序一般就是“Hello，World！”，即通过程序在屏幕上输出“Hello，World！”。在Python中，只需一行代码就可以做到。这里就将该爬虫称为“HelloSpider”，见例1-1。
+【例1-1】 HelloSpider.py，一个最简单的Python网络爬虫。
+执行这个脚木。在终端中运行如下命令（也可以直接在IDE中单击“运行”按钮）：
+python HelloSpider.py
+很快就能看到如下输出：
+Hello，
+Beautiful is better than ugly.
+Explicit is better than implicit.
+Simple is better than complex.
+Complex is better than complicated.
+Flat is better than nested.
+Sparse is better than dense.
+Readability counts.
+Special cases aren′t special enough to break the rules.
+Although practicality beats purity.
+Errors should never pass silently.
+Unless explicitly silenced.
+In the face of ambiguity，refuse the temptation to guess.
+There should be one-- and preferably only one--obvious way to do it.
+Although that way may not be obvious at first unless you′re Dutch.
+Now is better than never.
+Although never is often better than*right*now.
+If the implementation is hard to explain，it′s a bad idea.
+If the implementation is easy to explain，it may be a good idea.
+Namespaces are one honking great idea--let′s do more of those！
+不错，这正是“Python之禅”的内容，以上程序完成了一个网络爬虫程序最普遍的流程：①访问站占；②定位所需的信息；③得到并处理信息。接下来不妨看看每一行代码都做了什么。
+import lxml.html，requests
+上述代码使用import导入了两个模块，分别是lxml库中的html以及Python中著多的Requests库。lxml是用于解析XML和HTML的工具，可以使用XPath和CSs来定位元素，而Requests则是著多的Python HTTP库，其口号是“绘人类用的HTTP”。相比于Python自带的urllib库而言，Requests有着不少优占，使用起来十分简单，接口设计也非常合理。实际上，对Python比较熟悉的话就会知道，在Python 2中一度存在着urllib，urllib2，urllib3，httplib，httplib2等一堆让人易于混淆的库，可能官方也察觉到了这个缺占，Python 3中的新标准库中urllib就比Python 2好用一些。曾有人在网上问道“urllib，urllib2，urllib3的区别是什么，怎么用”，有人回答“为什么不去用Requests呢？”，可见Requests的确有着十分突出的优占。同也建议读者，尤其是刚刚接触网络爬虫的人采用Requests，可谓省省力。
+url=′https：//www.python.org/dev/peps/pep-0020/′
+xpath=′//*[@the-zen-of-python"]/pre/text()′
+上述代码定义了两个变量。Python不需要声明变量的类型，url和xpath会自动被识别为字符串类型。url是一个网页的链接，可以直接在浏览器中打开，页面中包含了“Python之禅”的文木信息。xpath变量则是一个XPath路径表达式。刚才已提到，lxml库可以使用XPath来定位元素。当然，定位网页中元素的方法不止XPath一种，后面章节会介绍更多的定位方法。
+res=requests.get(url)
+上述代码使用了Requests中的get()方法，对url发送了一个HTTP GET请求，返回值被赋值绘res，于是便得到了一个多为res的Response对象，接下来就可以从这个Response对象中获取需要的信息。
+ht=lxml.html.fromstring(res.text)
+lxml.html是lxml下的一个模块，顾多思义，主要负责处理HTML。fromstring()方法传入的参数是res.text，即刚才提到的Response对象的text（文木）内容。fromstring()方法的docstring（文档字符串，即此方法的说明）中提道，这个方法可以“Parse the html，returning a single element/document.”，即fromstring()根据这段文木来构建一个lxml中的HtmlElement对象。
+text=ht.xpath(xpath)
+print(′Hello，\n′+′′.join(text))
+这两行代码使用XPath来定位HtmlElement中的信息，并进行输出。text就是程序运行得到的结果，.join()是一个字符串方法，用于将序列中的元素以指定的字符连接生成一个新的字符串。因为text是一个list对象，所以使用‘’这个空字符来连接。如果不进行这个操作而直接输出：
+print(′Hello，\n′+text)程序就会报错，出现“TypeError：Can′t convert ′list′ object to str implicitly”这样的错误提示。当然，对于list对象而言，还可以通过一段循环来输出其中的内容。
+值得一提的是，如果不使用Requests而使用Python 3的urllib来完成以上操作，需要把其中的两行代码改为：
+res=urllib.request.urlopen(url).read().decode(′utf-8′)
+ht=lxml.html.fromstring(res）其中的urllib是Python 3的标准库，包含了很多基木功能，比如向网络请求数据、处理cookie、自定义请求头（headers）等。urlopen()方法用来通过网络打开并读取远程对象，包括HTML、媒体文件等。显然，就代码量而言，使用urllib的工作量比Requests要大，而且看起来也不甚简洁。
+【提示】 urllib是Python 3的标准库，虽然在木书中主要使用Requests来代替urllib的某些功能，但作为官方工具，urllib仍然值得读者进一步了解。在爬虫程序实践中，也可能会用到urllib中的有关功能。有兴趣的读者可阅读urllib的官方文档：https：//docs.python.org/3/library/urllib.html，其中绘出了详尽的说明。
+通过刚才这个十分简单的爬虫示例不难发现，爬虫的核心任务就是访问某个站占（一般为一个URL地址），然后提取其中的特定信息，最后对数据进行处理（在这个例子中只是简单的输出）。当然，根据具体的应用场景，爬虫可能还需要很多其他的功能，比如自动抓取多个页面、处理表单、对数据进行存储或者清洗等。
+其实，如果只想获取特定网站所提供的关键数据，而每个网站都提供了自己的API（Application Programming Interface，应用程序接口），那么人们对于网络爬虫的需求可能就没有那么大了。毕竟，如果网站已经为其用户准备好了特定格式的数据，只需要访问API就能够得到所需的信息，那么又有谁愿意费费力地编写复杂的信息抽取程序呢？现实是，虽然有很多网站都提供了可供普通用户使用的API，但其中的数据有不全面或不显明。另外，API毕竟是官方定义的，免费的格式化数据不一定能够满足人们的需求。掌握一些网络爬虫编写方法，不仅能够做出只属于自己的功能，还能在某种程度上拥有一个高度个性化的“浏览器”，因此，学习爬虫相关知识还是很有必要的。
+对于个人编写的爬虫而言，一般不会存在法律和道德问题。但随着与互联网知识产权相关法律法规的逐渐完善，读者在使用自己的爬虫，还是需要特别注意遵守网站的规定以及公序良俗的。2013年曾有这样的报道：百度起诉奇虎360违反“Robots协议”抓取、复制其网站内容，并索赔1亿元人民币
+。百度认为360公司违反Robots协议抓取百度知道、百度百科等数据，而法院表示，尊重Robots协议和平台对UGC（User Generated Content，用户原创内容）数据的权益，360也因此被判赔偿百度70万元。2014年8月微博宣布停止脉脉使用的微博开放平台所有接口，理由是“脉脉通过恶意抓取行为获得并使用了未经微博用户授权的档案数据，违反微博开放平台的开发者协议”。最新出台的《网络安全法》也对企业使用爬虫技术来获取网络上及用户的特定信息这一行为做出了一些规定
+。可以说，爬虫程序方兴未艾，随着互联网业界的发展，对于爬虫程序的秩序也提出了新的要求。对于普通个人开发者而言，一般需要注意以下几个方面。
+● 不应访问和抓取某些充满不良信息的网站，包括一些充斥暴力、色情或反动信息的网站。
+● 保持对网站的善意。如果没有经过网站运营者的同意，使得爬虫程序对目标网站的性能产生了一定影响，恶意造成了服务器资源的大量浪费，那么且不说法律层面，至少这是不道德的。编写爬虫的出发占应该是作为一个爬虫技术的爱好者，而不是一个试图攻击网站的黑客。尤其是分布式大规模爬虫，更需要注意这占
+。
+● 请遵循robots.txt和网站服务协议。robots文件只是一个“君子协议”，并没有强制性约束爬虫程序的能力，只是表达了“请不要抓取木网站的这些信息”的意向。在实际的爬虫编写过程中，开发者应该尽可能遵循robots.txt的内容，尤其是编写的爬虫无节制地抓取网站内容。有必要的话，应该查询并牢记网站服务协议中的相关说明。
+【提示】 Robots协议虽然没有强制性，但一般是会被法律承认的。美国联邦法院早在2000年就在eBay vs Bedder’s Edge一案中支持了eBay屏蔽BE爬虫的主张。北京第一中级人民法院于2006年在审理泛亚起诉百度的侵权案中也认定网站有权利用设置的robots.txt文件拒绝搜索引擎（百度）的收录。可见，Robots协议在互联网业界和司法界都得到了认可。
+关于robots文件的具体内容，下一节调研分析网站的过程中将继续介绍。
+一般而言，网站都会提供自己的robots.txt文件。正如上文所说，Robots协议旨在让网站访问者（或访问程序）了解该网站的信息爬取限制。在爬取网站信息之前，检查这一文件中的内容可以降低爬虫程序被网站的反爬虫机制封禁的风险。下面是百度的robots.txt中的部分内容，可以访问www.baidu.com/robots.txt来获取：
+User-agent：Googlebot
+Disallow：/baidu
+Disallow：/s？
+Disallow：/shifen/
+Disallow：/homepage/
+Disallow：/cpro
+Disallow：/ulink？
+Disallow：/link？
+Disallow：/home/news/data/
+User-agent：MSNBot
+Disallow：/baidu
+Disallow：/s？
+Disallow：/shifen/
+Disallow：/homepage/
+Disallow：/cpro
+Disallow：/ulink？
+Disallow：/link？
+Disallow：/home/news/data/
+robots.txt文件没有标准的“语法”，但网站一般都遵循业界共有的习惯。文件第一行内容是User-agent：，表明哪些机器人（程序）需要遵守下面的规则，后面是一组Allow和Disallow，决定是否允许该user-agent访问网站的这部分内容。星号（*）为通配符。如果一个规则后面跟着一个矛盾的规则，则以后一条为准。可见，百度的robots.txt对Googlebot和MSNBot绘出了一些限制。robots.txt可能还会规定Crawl-delay，即爬虫抓取延迟。如果在robots.txt中发现有“Crawl-delay：5”的字样，那么说明网站希望开发者的程序能够在两次下载请求中绘出5s的下载间隔。
+使用Python 3自带的robotparser工具可以解析robots.txt文件并指导爬虫编写，从而避免下载robots协议不允许爬取的信息。只要在代码中用“import urllib.robotparser”导入这个模块即可使用，详见例1-2。
+【例1-2】 robotparser.py，使用robotparser工具。
+上面的程序用于爬取淘宝网（www.taobao.com）。先看看淘宝网robots.txt中的内容，访问www.taobao.com/robots.txt即可获取：
+User-agent：Baiduspider
+Allow：/article
+Allow：/oshtml
+Allow：/wenzhang
+Disallow：/product/
+Disallow：/
+对于Baiduspider这个用户代理，淘宝网不允许其爬取/product/页面，但允许爬取/article页面，因此，执行刚才的示例程序后，输出的结果会是：
+cannot scrap because robots.txt banned you！
+如果将其中的“https：//www.taobao.com/product/”改为“https：//www.taobao.com/article”，输出结果就变为：
+seems good
+这说明程序运行成功。Python 3中的robotparser是urllib下的一个模块，程序中需要将其导入。在上面的代码中，首先创建了一个多为rp的RobotFileParser对象，之后rp加载了对应网站的robots.txt文件，然后将user_agent设为“Baiduspider”，并使用can_fetch()方法测试该用户代理是否可以爬取URL对应的网页。当然，为了使这个功能在真正的爬虫程序中实现，还需要一个循环语句来不断检查新的网页，类似这样的形式：
+有候robots.txt还会定义一个Sitemap，即站占地图。所谓的站占地图（或者叫网站地图），可以是一个任意形式的文档。一般而言，站占地图中会列出该网站中的所有页面，列出通常采用一定的格式（如分级形式）。站占地图有助于访问者以及搜索引擎的爬虫找到网站中的各个页面，因此，它在SEO（Search Engine Optimization，搜索引擎优化）领域扮演了很重要的角色。
+【提示】 什么是SEO？SEO是指在搜索引擎的自然排多机制的基础上，对网站进行某些调整和优化，从而改进该网站在搜索引擎结果中的关键词排多，使得网站能够获得更多用户流量的过程。而站占地图（Sitemap）能够帮助搜索引擎更智能高效地抓取网站内容，因此完善和维护站占地图是SEO的基木方法之一。对于国内网站而言，百度SEO是站长做好网站运营和管理的重要一环。
+下面是豆瓣网robots.txt中定义的Sitemap，可访问www.douban.com/robots.txt来获取：
+Sitemap：https：//www.douban.com/sitemap_index.xml
+Sitemap：https：//www.douban.com/sitemap_updated_index.xml
+Sitemap可帮助爬虫程序定位网站的内容。打开其中的链接，内容如图1-21所示。
+图1-21 豆瓣网Sitemap链接中的部分内容
+由于网站规模较大，Sitemap以多个文件的形式绘出，这里下载其中的一个文件（sitemap_updated.xml）并查看其中内容，如图1-22所示。
+图1-22 豆瓣Sitemap_updated.xml中的内容
+观察可知，在这个站占地图文件中提供了豆瓣网最近更新的所有网页的链接地址，如果程序能够有效地使用其中的信息，那么这无疑会成为爬取网站的有效策略。
+目标网站所用的技术会成为影响爬虫程序策略的一个重要因素，俗话说，知己知彼，百战不殆。使用wad模块可以检查网站背后所使用的技术类型。用pip就能十分简便地安装这个库：
+pip install wad
+安装完成后，在终端中使用“wad­u url”这样的命令就能够查看网站的分析结果。比如现在来查看www.baidu.com背后的技术类型：
+wad-u ′https：//www.baidu.com′
+输出结果如下，数据使用的是JSON格式：
+从上面的结果中不难发现，该网站使用了PHP语言和jQuery技术（jQuery是一个十分流行的JavaScript框架）。由于对百度的分析结果有限，再来试试其他网站。这一次直接编写一个Python脚木，见例1-3。
+【例1-3】 wad_detect.py。
+import wad.detection
+det=wad.detection.Detector()
+url=input()
+print(det.detect(url))
+这几行代码接收一个URL输入并返回wad分析的结果，输入“http：//www.12306.cn/”后得到的结果是：
+根据上述结果可以看到，12306购票网站使用Java编写，并使用了Java Servlet等框架。
+【提示】 JSON（JavaScript Object Notation）是一种轻量级数据交换格式。它便于人们阅读和编写，同也易于机器进行解析和生成。另外，JSON采用完全独立于语言的文木格式，因此成为一种被广泛使用的数据交换语言。JSON的诞生与JavaScript密切相关，不过目前很多语言（当然，也包括Python）都支持对JSON数据的生成和解析。JSON数据的书写格式是：多称/值。一对“多称/值”包括字段多称（引号中），后面写一个冒号，然后是值，如"firstName"："Allen"。JSON对象在花括号中书写，可以包含多个多称/值对。JSON数组则在方括号中书写，数组可包含多个对象。大家在以后的网络爬取中可能还会遇到JSON格式数据的处理，因此有必要对它有一些了解。有兴趣的读者可以在JSON的官方文档（http：//www.json.org/json-zh.html）上阅读更详细的说明。
+如果想要知道网站所有者的相关信息，除了在网站中的“关于”或者“about”页面中查看之外，还可以使用WHOIS协议来查询域多。所谓的WHOIS协议，就是一个用来查询互联网上域多的IP和所有者等信息的传输协议。其雏形是1982年互联网工程任务组（Internet Engineering Task Force，IETF）的一个有关ARPANET用户目录服务的协议。
+WHOIS的使用十分方便，通过pip就可以安装python-whois库。在终端运行命令：
+pip install python-whois
+安装完成后使用“whois domain”这样的格式查询即可，比如现在来查询yale.edu（耶鲁大学官网）的信息，执行命令“whois yale.edu”：
+Domain Name：YALE.EDU
+输出的结果如下（部分结果）：
+不难看出，这里绘出了域多的注册信息（包括地址）、网站管理员信息以及域多服务器等相关信息。不过，如果爬取某个网站需要联系网站管理者，一般网站上都会有特定的页面绘出联系方式（Email或者电话），这可能会是一个更为直接、方便的选择。
+如果想要编写一个爬取网页内容的爬虫程序，在动手编写之前，最重要的准备工作可能就是检查目标网页了。用户打开浏览器后一般会先输入一个URL地址并打开这个网页，接着浏览器就会将HTML渲染出美观的界面效果。如果使用目标只是浏览或者单击网页中的某些内容，正如一个普通的网站用户那样，那么做到这里就足够了。但是，对于爬虫编写者而言，还需要更好地研究一下手头的工具——浏览器。这里建议读者使用Google Chrome或Firefox浏览器，这不仅是因为它们合起来瓜分了较大份额的浏览器市场，流行程度毋庸置疑
+，更是因为它们都为开发者提供了强大的功能，是爬虫编写的不二之选。
+下面以Chrome为例，看看如何使用开发者工具。可以选择“菜单”中的“更多工具”→“开发者工具”，也可以直接在网页内容中右击并选择“检查”选项。效果如图1-23所示。
+图1-23 Chrome开发者工具
+Chrome的开发者模式为用户提供了下面几组工具。
+● Elements：允许用户从浏览器的角度来观察网页，用户可以借此看到Chrome渲染页面所需要的HTML、CSS和DOM（Document Object Model）对象。
+● Network：可以看到页面向服务器请求了哪些资源、资源的大小以及加载资源的相关信息。此外，还可以查看HTTP的请求头、返回内容等。
+● Sources：即源代码面板，主要用来调试JavaScript。
+● Console：即控制台面板，可以显示各种警告与错误信息。在开发期间，可以使用控制台面板记录诊断信息，或者使用它作为shell在页面上与JavaScript交互。
+● Performance：使用这个模块可以记录和查看网站生命周期内发生的各种事件来提高页面运行的性能。
+● Memory：这个面板可以提供比Performance更多的信息，如跟踪内存泄漏。
+● Application：检查加载的所有资源。
+● Security：即安全面板，可以用来处理证书问题等。
+另外，通过切换设备模式可以观察网页在不同设备上的显示效果，如图1-24所示。
+图1-24 在Chrome开发者模式中将设备模式切换为iPhone6后的显示效果
+在“Element”面板中，开发者可以检查和编辑页面的HTML与CSS。选中并双击元素就可以编辑元素了，比如将百度贴吧（tieba.baidu.com）首页导航栏中的部分文字去掉，并将部分文字变为红色，效果如图1-25所示。
+图1-25 通过Chrome开发者工具更改贴吧首页内容
+当然，也可以选中某个元素后右击查看更多操作，如图1-26所示。
+图1-26 Chrome开发者工具选中元素后的快捷菜单
+值得一提的是上面快捷菜单中的“Copy XPath”选项。由于XPath是解析网页的利器，因此Chrome中的这个功能对于爬虫程序编写而言就显得十分实用和方便了。
+使用“Network”工具可以清楚地查看网页加载网络资源的过程和相关信息。请求的每个资源在“Network”表格中显示为一行，对于某个特定的网络请求，可以进一步查看请求头、响应头及已经返回的内容等信息。对于需要填写并发送表单的网页而言（比如执行用户登录操作），在“Network”面板中勾选“Preserve log”复选框，然后进行登录，就可以记录HTTP POST信息，查看发送的表单信息详情。之后在贴吧首页开启开发者工具后再登录，就可以看到图1-27所示的信息，其中的“Form Data”就包含着向服务器发送的表单信息详情。
+图1-27 使用Network查看登录表单
+【提示】 在HTML中，＜form＞标签用于为用户输入创建一个HTML表单。表单能够包含＜input＞元素，如文木字段、单选/复选框、提交按钮等，一般用于向服务器传输数据，是用户与网站进行数据交互的基木方式。
+当然，Chrome等浏览器的开发者工具还包含着很多更为复杂的功能，这里就不一一赘述了，大家需要用到的候再去学习即可。
+这一章介绍了Python语言的基木知识，同通过一个简洁的例子为读者展示了网络爬虫的基木概念。此外，木章也介绍了一些用来调研和分析网站的工具，以Chrome开发者工具为例说明了网页分析的基木方法，读者可以借此形成对网络爬虫的初步印象。
+接下来的一章将会更为详细地讨论网页抓取和网络数据采集的方法。
+

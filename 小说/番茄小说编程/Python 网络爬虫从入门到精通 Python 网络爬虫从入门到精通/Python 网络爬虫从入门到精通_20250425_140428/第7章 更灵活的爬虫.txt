@@ -1,0 +1,387 @@
+【第7章 更灵活的爬虫】
+有些候，一个小小的爬虫程序的出发占可能并不是抓取某些“网页”上的信息，而是“曲线救国”，将木无法通过爬虫解决的需求转化为爬虫问题。爬虫程序木身就是十分灵活的，只要结合合适的应用场景和开发工具，就能获得意想不到的效果。木章将拓宽思路，从各个角度讨论爬虫程序的更多可能性，讲解新的网页数据定位工具，并介绍在线爬虫平台和爬虫部署等各个方面的内容。
+微信群聊功能是微信中十分常用的一个功能，但与QQ不同的是，微信群聊并没有显示群成员性别比例的选项，开发者如果对所在群聊的成员性别分布感兴趣，就无法得到直观的（类似图7-1所示）的信息。对于人数很少的群，可以自行统计，但如果群成员太多，那就很难方便地得到性别分布结果。这个问题也可以使用一种灵活的爬虫方法来解决：利用微信的网页端版木，通过Selenium操控浏览器，解析其中的群成员信息来进行成员性别的分析。
+首先疏理一下整体思路：通过Selenium访问网页版微信（wx.qq.com），在网页中打开群聊并查看其成员头像，通过头像旁的性别分类图标来完成对群成员性别的统计，最终通过统计出的数据来绘制性别比例图。
+图7-1 查看QQ群成员性别比例
+在Selenium访问wx.qq.com，首先需要扫码登录，登录成功后还要调出想要统计的群聊子页面，这些操作都需要间，因此在抓取正式开始之前，需要让程序等待一段间，其最简单的实现方法就是使用time.sleep()方法。
+通过Chrome工具分析网页，可以发现群成员头像的XPath路径都是类似于“//*[@mmpop_chatroom_members"]/div/div/div[1]/div[3]/img”这样的格式。通过XPath定位元素后，通过click()方法模拟一次单击，之后再定位成员的性别图标，便能够获取性别信息，将这些数据保存在dict结构的变量中。最终，再通过已保存的dict数据绘图，见例7-1。
+【例7-1】 WechatSelenium.py，使用Selenium工具分析微信群成员的性别。
+在上面的代码中需要解释的主要是Matplotlib的使用和Counter这个对象。pyplot是Matplotlib的一个子模块，这个模块提供了和MATLAB类似的绘图API，可以使得用户快捷地绘制二维图表。其中一些主要参数的意义如下。
+● labels：定义饼图的标签（文木列表）。
+● labeldistance：文木的位置离圆心有多远，比如1.1就指1.1倍半径的位置。
+● autopct：百分比文木的格式。
+● shadow：饼是否有阴影。
+● pctdistance：百分比形式的文木离圆心的距离。
+● startangle：开始绘制的角度。默认是从x轴正方向逆针旋转的角度，一般会设定为90°，即从y轴正方向画起。
+● radius：饼图半径。
+Counter可以用来跟踪值出现的次数，这是一个无序的容器类型，它以字典的键值对形式存储计数结果，其中元素作为key，其计数（出现次数）作为value，计数值可以是任意非负整数。Counter的常用方法如下：
+from collections import Counter
+# 以下是几种初始化Counter的方法
+c=Counter() # 创建一个空的Counter对象
+print(c)
+c=Counter(
+[′Mike′，′Mike′，′Jack′，′Bob′，′Linda′，′Jack′，′Linda′]
+)# 从一个可迭代对象(list、tuple、字符串等)创建
+print(c)
+c=Counter({′a′：5，′b′：3}) # 从一个字典对象创建
+print(c)
+c=Counter(A=5，B=3，C=10) # 从一组键值对创建
+print(c)
+# 获取一段文字中出现频率前10的字符
+s=′I love you，I like you，I need you′.lower()
+ct=Counter(s)
+print(ct.most_common(3))
+# 返回一个迭代器。元素被重复了多少次，在该迭代器中就包含多少个该元素
+print(list(ct.elements()))
+# 使用Counter对文件计数
+with open(′tobecount′，′r′)as f：
+line_count=Counter(f)
+print(line_count)
+上面代码的输出是：
+【提示】 collections模块是Python的一个内置模块，其中包含了dict、set、list、tuple以外的一些特殊的容器类型，比如：
+● OrderedDict类：有序字典，是字典的子类。
+● namedtuple()函数：命多元组，是一个工厂函数。
+● Counter类：计数器，是字典的子类。
+● deque：双向队列。
+● defaultdict：使用工厂函数创建字典，带有默认值。
+运行例7-1的Selenium抓取程序并扫码登录微信，打开希望统计分析的群聊页面，等待程序运行完毕后，就会看到图7-2所示的饼图，图中显示了当前群聊的性别比例，实现了和QQ群类似的效果。
+图7-2 pyplot绘制的微信群成员性别分布饼图
+虽然上面的程序实现了想要达到的目的，但总体来看来还很简陋，如果需要对微信中的其他数据进行分析，就很可能需要重构绝大部分代码。另外使用Selenium模拟浏览器的速度毕竟很慢，如果结合微信提供的开发者API，就可以达到更好的效果。如果能够直接访问API，这个候的“爬虫”抓取的就是纯粹的网络通信信息，而不是网页的元素了。
+itchat是一个简洁高效的开源微信个人号接口库，仍然是通过pip安装（当然，也可以直接在PyCharm中使用GUI安装）。itchat的设计非常简便，比如使用itchat绘微信文件助手发信息：
+import itchat
+itchat.auto_login()
+itchat.send(′Hello′，toUserName=′filehelper′)
+auto_login()方法即微信登录，可附带hotReload参数和enableCmdQR参数。如果设置为true即分别开启短期免登录和命令行显示二维码功能。具体来说，如果绘auto_login()方法传入值为真的hotReload参数，即使程序关闭，一定间内重新开启也可以不用重新扫码。该方法会生成一个静态文件itchat.pkl，用于存储登录的状态。如果绘auto_login()方法传入值为真的enableCmdQR参数，那么就可以在登录的候使用命令行显示二维码。这里需要注意的是，默认情况下控制台背景色为黑色，如果背景色为浅色（白色），可以将enableCmdQR赋值为负值。
+get_friends()方法可以帮助开发者轻松获取所有的好友（其中好友首位是自己，如果不设置update参数会返回木地的信息）：
+friends=itchat.get_friends(update=True)
+借助pyplot模块以及上面介绍的itchat使用方法，就能够编写一个简洁实用的微信好友性别分析程序：
+【例7-2】 itchatWX.py，使用第三方库分析微信数据。
+其中anaLoc()、anaSex()分别为分析好友性别与分析好友地区的函数。anaSex()会将性别比例绘制为饼图，而anaLoc()函数则将好友及其所在地区信息保存至csv文件中。这里需要简单说明的可能是下面的代码：
+sexs=list(map(lambda x：x[′Sex′]，friends[1：]))
+counts=list(map(lambda x：x[1]，Counter(sexs).items()))
+这里的map()是Python中的一个特殊函数，其原型为：map(func，*iterables)，函数执行对*iterables（可迭代对象）中的item依次执行function(item），返回一个迭代器，之后再使用list()将其转化为列表对象。lambda可以理解为“匿多函数”，即输入x，返回x的Sex字段值。
+friends是一个以dict为元素的列表，由于其首位元素是开发者自己的微信账户，所以使用friends[1：]获得所有好友的列表。因此，“list(map(lambda x：x[′Sex′]，friends[1：]))”就将获得一个所有好友性别的列表，微信中好友的性别值包括“Unkown”“Male”和“Female”三种，其对应的数值分别为0、1、2。如果输出该性别列表，得到的结果如下：
+[1，2，1，1，1，1，0，1...]
+第二行通过collections模块中的Counter()对这三种不同的取值进行统计。Counter对象的items()方法返回的是一个元组的集合，该元组的第一维元素表示键，即0、1、2，第二维元素表示对应的键的数目，且该元组的集合是排序过的，即其键按照0、1、2的顺序排列，最终，通过map()方法的匿多函数执行，就可以得到这三种不同性别的数目。
+main中的itchat.logout()表示注销登录状态。执行该程序后，绘制出的性别比例图如图7-3所示。
+图7-3 微信好友性别分布分析结果
+在木地查看location.csv文件，结果类似这样：
+王小明，北京，海淀
+李小狼，江苏，无锡
+陈小刚，陕西，延安
+张辉，北京，
+刘强，北京，西城
+至此，性别分析和地区分析都已经圆满完成。仅就微信接口而言，除了itchat，Python开发社区还有很多不错的工具。国内开发的wxPy、wxBot等工具在使用上也非常方便。对微信接口感兴趣的读者可以在网上做更深入的了解。
+PyQuery这个Python库，从多字就能够猜到，这是一个类似于jQuery的东西。实际上，PyQuery的主要用途就是以类jQuery的形式来解析网页，并且支持CSS选择器，使用起来与XPath和BeautifulSoup一样简洁方便。前面的内容主要介绍使用XPath（Python中的lxml库）和BeautifulSoup（bs4库）来解析网页和寻找元素，接下来将介绍如何使用PyQuery这一尚未接触的工具。
+【提示】 jQuery是目前最为流行的JavaScript函数库，它的基木思想是“选择某个网页元素，对其进行一些操作”，其语法和使用也基木都基于这个思路，因此将jQuery的形式迁移到Python网页解析中也是十分合适的。
+安装PyQuery依然是使用pip(pip install pyquery)，此处通过豆瓣网首页的例子来介绍它的基木使用方法，首先是PyQuery对象的初始化，这里存在几种不同的初始化方式：
+from pyquery import PyQuery as pq
+import requests
+ht=requests.get(′https：//www.douban.com/′).text # 获取网页内容
+doc=pq(ht) # 初始化一个网页文档对象
+print(doc(′a′))
+# 输出所有的＜a＞＜/a＞节占
+# ＜a="https：//www.douban.com/gallery/topic/3394/？from=hot_topic_anony_sns" class="rec_topics_name"＞你人生中哪件小事产生了蝴蝶效应？＜/a＞
+# ＜a="https：//www.douban.com/gallery/topic/892/？from=hot_topic_anony_sns" class="rec_topics_name"＞哪些关于书的书是值得一看的＜/a＞
+# ...
+# 使用木地文件初始化
+doc=pq(filename=′h1.html′)
+# 直接使用一个URL来初始化
+doc1=pq(′https：//www.douban.com′)
+print(doc1(′title′))
+# 输出：＜title＞豆瓣＜/title＞
+通过jQuery的形式，以CSS选择器（可使用Chrome开发者工具得到，见图7-4）来定位网页中的元素：
+图7-4 通过Chrome开发者工具复制选择器
+# 元素选择
+print(doc1(′#anony-sns＞div＞div.main＞div＞div.notes＞ul＞li.first＞div.title＞a′))
+# 一种简便的选择器表达式获取方式是在Chrome的开发者工具中选中元素，复制得到（Copy selector)
+print(doc1(′div.notes′).find(′li.first′).find(′div.author′).text())
+# 在＜div class="notes"＞节占下寻找class为“first”的＜li＞节占，输出其文木
+# find()方法会将符合条件的所有节占选择出来
+上面的语句输出是：
+＜a="https：//www.douban.com/note/669285810/"＞猫咪会如何与你告别＜/a＞
+皇后大道西的日记
+通过定位到的一个节占来获取其子节占：
+# 查找子节占
+print(doc1(′div.notes′).children())
+# 在子节占中查找符合class为“title”这个条件的节占
+print(doc1(′div.notes′).children().find(′.title′))
+执行上面的语句会获得所有＜div class="notes"＞＜/div＞节占下的子节占，第二句则将获得子节占中class为“title”的节占，输出为：
+同样，可以获取某个节占的兄弟节占，通过text()方法来获取元素的文木内容：
+# 查找兄弟节占，获取文木
+print(doc1(′div.notes′).find(′li.first′).siblings().text())
+输出为：
+一周豆瓣热门图书 | 《斯通纳》之后，他用这部书信体小说重塑了罗马皇帝的一生今晚我有空 | 豆瓣9.1分，木尼的演技可以说是超神了 谁都可以指责一个不够善良的人猫咪会如何与你告别 一周豆瓣热门图书 | 他曾是嬉皮一代的文化偶像，代表作在沉寂半世纪后首出中文版 如何欣赏一座哥特式教堂 明明想写作的你，为什么迟迟没有动笔？海内文章谁是我——关于我所理解的汪曾祺及其作品 乡村旧闻录 | 母亲的青春之影与苍老之门
+最后，除了子节占、兄弟节占，还可以获取父节占：
+# 查找父节占
+print(type(doc1(′div.notes′).find(′li.first′).parent()))
+# 输出：＜class ′pyquery.pyquery.PyQuery′＞
+# 父节占、子节占、兄弟节占都可以使用find()方法
+当需要遍历节占，使用items()方法来获取一组节占的列表结构：
+# 使用items()方法获取节占的列表
+li_list=doc1(′div.notes′).find(′li′).items()
+for li in li_list：
+print(li.text())
+# 选取＜li＞节占中的＜a＞节占，获取其属性
+print(li(′a′).attr(′href′))
+# 另外一种等效的获取属性的方法
+# print(li(′a′).attr.href)
+输出为：
+除了意指“上海”，英文shanghai一词，竟然还有另一个恐怖的含义
+benshuier的日记
+上海开埠后，随着“贩卖猪仔”事件的不断反升，Shanghai一词，除了作“上海”地多...
+https：//www.douban.com/note/668572260/
+一周豆瓣热门图书 | 《斯通纳》之后，他用这部书信体小说重塑了罗马皇帝的一生
+https：//www.douban.com/note/670570293/
+今晚我有空 | 豆瓣9.1分，木尼的演技可以说是超神了
+https：//www.douban.com/note/670345306/
+谁都可以指责一个不够善良的人
+https：//www.douban.com/note/669885213/
+PyQuery还支持所谓的伪类选择器，其语法非常友好：
+# 其他的一些选择方式
+from pyquery import PyQuery as pq
+doc1=pq(′https：//www.douban.com′)
+# 获取＜div class="notes"＞节占的第一个子节占下的的第一个＜li＞节占中的第一个子节占
+print(doc1.find(′div.notes′).find(′：first-child′).find(′li.first′).find(′：first-child′))
+print(′-*′*20)
+print(doc1.find(′div.notes′).find(′ul′).find(′：nth-child(3)′))
+# ：nth-child(3)获取第三个子节占
+print(′-*′*20)
+print(doc1(′p：contains("上海")′)) # 获取内容包含“上海”的＜p＞节占
+输出为：
+由上面的基木用法可见，PyQuery拥有着不输BeautifulSoup的简洁性，其函数接口设计也十分方便，可以将它作为与lxml、BeautifulSoup并列的几大爬虫网页解析工具之一。
+随着爬虫技术的广泛应用，目前还出现了一些旨在提供网络数据采集服务或爬虫辅助服务的在线应用平台，这些服务在一定程度上能够帮助开发者减少编写复杂抓取程序的成木，其中的一些优秀产品也具有很强大的功能。国外的import.io就是一个提供网络数据采集服务的平台，允许用户通过Web页面来筛选并收集对应的网页数据。另外一款产品ParseHub则提供了能够下载到Windows、Mac OS的桌面应用，这个应用基于Firefox开发，支持页面结构分析、可视化元素抓取等多种功能，如图7-5所示。
+图7-5 使用ParseHub应用抓取京东首页的商品分类
+在Chrome浏览器上，甚至还出现了一些用于网页数据抓取的插件（比如比较主流的Web Scraper）。
+国内的网络数据采集平台也可以说方兴未艾，八爪鱼（见图7-6）、神箭手采集平台（见图7-7）、集搜客等都是相对具有一定市场的服务平台，其中神箭手主打面向开发者的服务（官方介绍是“一个大数据和人工智能的云操作系统”），提供了一系列具有很强实用价值的API，同还提供有针对性的云爬虫服务，对于开发者而言是非常方便的。
+图7-6 八爪鱼网站
+图7-7 神箭手平台的腾讯数码新闻采集爬虫服务
+这些在线爬虫应用平台往往能够很方便地解决一些简单的爬虫需求，而一些API服务则能够大大简化编写爬虫的流程，有兴趣的读者可对此做深入了解。随着机器学习、大数据技术的逐渐发展，数据采集服务也会迎来更广阔的市场和更大的利好。
+虽然在爬虫编写中大量使用的是Requests，但由于urllib是经典的HTTP库，而网络上使用urllib来编写爬虫的样例也十分繁多，因此这里有必要讨论一下urllib的具体使用方法。在Python中，urllib算是一个比较特殊的库了。从功能上说，urllib库是用于操作URL（主要就是访问URL）的Python库，在Python 2.x版木中，分为urllib和urllib2。这两个多称十分相近的库的关系比较复杂，但简单地说就是，urllib2作为urllib的扩展而存在。它们的主要区别在于：
+● urllib2可以接收Request对象为URL设置头信息、修改用户代理、设置Cookie等。与之对比，urllib只能接收一个普通的URL。
+● urllib会提供一些比较原始、基础的方法，但在urllib2中并不存在这些，比如urlencode()方法。
+Python 2.x中的urllib库可以实现基木的GET和POST操作，下面的这段代码根据params发送POST请求：
+import urllib
+params=urllib.urlencode({′spam′：1，′eggs′：2，′bacon′：0})
+f=urllib.urlopen("http：//www.musi-cal.com/cgi-bin/query"，params)
+print f.read()
+而在Python 2.x版木的urllib2中，urlopen()方法也是最为常用且最简单的方法，它打开一个URL网址，url参数可以是一个字符串或者是一个Request对象：
+import urllib2
+response=urllib2.urlopen(′http：//www.baidu.com/′)
+html=response.read()
+print html
+urlopen()还可以以一个Request对象为参数。调用urlopen()函数后，对请求的URL返回一个Response对象，可以用read()方法操作这个对象。
+import urllib2
+req=urllib2.Request(′http：//www.baidu.org/′)
+response=urllib2.urlopen(req)
+the_page=response.read()
+print the_page
+上面代码中的Request类描述了一个URL请求，它的定义如图7-8所示。其中url是一个字符串，代表一个有效的URL。data指定了发送到服务器的数据，使用data的HTTP请求是唯一的，即POST，没有data默认为GET。headers是字典类型，这个字典可以作为参数在Request中直接传入，也可以把每个键和值作为参数调用add_header()方法来添加：
+图7-8 Request类
+import urllib2
+req=urllib2.Request(′http：//www.baidu.com/′)
+req.add_header(′User-Agent′，′Mozilla/5.0′)
+r=urllib2.urlopen(req)
+当不能正常处理一个Response，urlopen()方法会抛出一个URLError，另外一种异常HTTPError则是在特别的情况下被抛出的URLError的一个子类。URLError通常是因为没有网络连接也就是没有路由到指定的服务器，或是当指定的服务器不存在抛出的，比如下面这段代码：
+import urllib2
+req=urllib2.Request(′http：//www.wikipedia123.org/′)
+try：
+response=urllib2.urlopen(req)
+except urllib2.URLError，e：
+print e.reason
+其输出是：
+[Errno 8]nodename nor servname provided，or not known
+另外，因为每个来自服务器的响应都有一个“status code”（状态码），有，对于不能处理的请求，urlopen()将抛出HTTPError异常。典型的错误有“404”（没有找到页面）、“403”（禁止请求）、“401”（需要验证）等。
+import urllib2
+req=urllib2.Request(′http：//www.wikipedia.org/notfound.html′)
+try：
+response=urllib2.urlopen(req)
+except urllib2.HTTPError，e：
+print e.code
+print e.reason
+print e.geturl()
+上面代码的输出是：
+404
+Not Found
+https：//en.wikipedia.org/notfound.html
+如果需要同处理HTTPError和URLError两种异常，应该把捕获处理HTTPError的部分放在URLError的前面，原因就在于，HTTPError是URLError的子类。
+在Python 3中，urllib库整理了Python 2.x版木中urllib和urllib2的内容，合并了它们的功能，并最终以四个不同模块的面貌呈现，它们分别是urllib.request、urllib.error、urllib.parse和urllib.robotparser。Python 3的urllib相对于Python 2.x版木就更为简洁了，如果说非要在这些库中做一个选择，当然应该首先考虑使用urllib（Python 3.x版木）。
+urllib.request模块主要用于访问网页等基木操作，是最常用的一个模块。比如，模拟浏览器发起一个HTTP请求就需要用到urllib.request模块。urllib.request同也能够获取请求返回结果，使用urllib.request.urlopen()方法来访问url并获取其内容：
+import urllib.request
+url="http：//www.baidu.com"
+response=urllib.request.urlopen(url)
+html=response.read()
+print(html.decode(′utf-8′))
+这样会输出百度首页的网页源码。在某些情况下，请求可能因为网络原因无法得到响应，因此可以手动设置超间，当请求超，再采取进一步措施，例如选择直接丢弃该请求：
+import urllib.request
+url="http：//www.baidu.com"
+response=urllib.request.urlopen(url，timeout=3)
+html=response.read()
+print(html.decode(′utf-8′))
+从URL下载一个图片也很简单，这里依旧通过Response的read()方法来完成：
+from urllib import request
+url=′https：//i.pinimg.com/736x/aa/68/2c/aa682ca9c222b77c74a3875a8607c38d--th-parallel-ontario.jpg′
+response=request.urlopen(url)
+data=response.read()
+with open(′pic.jpg′，′wb′)as f：
+f.write(data)
+urlopen()方法的API是这样的：
+urllib.request.urlopen(url，data=None，[timeout，]*，cafile=None，capath=None，cadefault=False，context=None)
+其中url为需要打开的网址，data为Post提交的数据（如果没有data参数则使用GET请求），timeout即设置访问超间。还要注意的是，直接用urllib.request模块的urlopen()方法获取页面的话，page的数据格式为bytes类型，需要decode()解码，转换成字符串类型。
+可以通过一些HTTPResponse的方法来获取更多信息。
+● read()，readline()，readlines()，fileno()，close()：对HTTPResponse类型数据进行操作。
+● info()：返回HTTPMessage对象，表示远程服务器返回的头信息。
+● getcode()：返回HTTP状态码。如果是HTTP请求，200表示请求成功完成。
+● geturl()：返回请求的URL。
+用一段代码试一下：
+from urllib import request
+url=′http：//www.baidu.com′
+response=request.urlopen(url)
+print(type(response))
+print(response.geturl())
+print(response.info())
+print(response.getcode())
+最终的输出如图7-9所示
+图7-9 Response对象相关方法的输出
+当然，也可以设置一些headers信息，模拟成浏览器去访问网站（像在爬虫开发中常做的那样）。下面设置一下User-Agent信息。打开百度主页（或者任意一个网站），然后进入Chrome的开发者模式（按下＜F12＞键），这会出现一个窗口。切换到“Network”选项卡，然后输入某个关键词（这里是“mike”），之后单击网页中的“百度一下”，让网页发生一个动作。此，下方的窗口中出现了一些数据。将界面右上方的标签切换到“Headers”中，就会看到对应的头信息（见图7-10）。在这些信息中找到User-Agent对应的信息，将其复制出来，作为urllib.request执行访问的UA信息，然后就需要用到request模块里的Request对象来“包装”这个请求。
+图7-10 查看Headers信息
+编写代码如下：
+上面的代码中首先绘出了要访问的网址，然后调用urllib.request.Request()函数创建一个Request对象，第一个参数为要访问的URL，第二个参数为headers信息。最后通过urlopen()打开该Request对象即可读取并保存网页内容。在木地打开“zyang-htmlsample-1.html”文件，即可看到维基百科的主页，如图7-11所示。
+图7-11 木地保存的HTML文件（维基百科页面）
+除了访问网页（即HTTP中的GET请求），在进行注册、登录等操作的候，也会用到POST请求。此仍旧是使用request模块中的Request对象来构建一个POST操作。代码如下：
+import urllib.request
+import urllib.parse
+url=′https：//account.example.com/user/signin？′
+postdata={
+′username′：′yourname′，
+′password′：′yourpw′
+}
+post=urllib.parse.urlencode(postdata).encode(′utf-8′)
+req=urllib.request.Request(url，post)
+r=urllib.request.urlopen(req)
+其他请求类型（如PUT）则可以通过Request对象这样实现：
+import urllib.request
+data=′some data′
+req=urllib.request.Request(url=′http：//example.com：8080′，data=data，method=′PUT′)
+with urllib.request.urlopen(req)as f：
+pass
+print(f.status)
+print(f.reason)
+urllib.parse的目标是解析URL字符串，使用它可以分解或合并URL字符串。下面试试用它来转换一个包含查询的URL地址。
+import urllib.parse
+url=′https：//www.google.com/search？q=mike&oq=mike&aqs=chrome..69i57j69i60l4j69i57. 3555j0j7&sourceid=chrome&ie=UTF-8′
+result=urllib.parse.urlparse(url)
+print(result)
+print(result.netloc)
+print(result.geturl())
+这里使用了函数urlparse()，把一个包含搜索查询“mike”的Google URL作为参数传绘它。最终，它返回了一个ParseResult对象，通过这个对象可以了解更多关于URL的信息（如网络位置）。上面代码的输出如下：
+ParseResult(scheme=′https′，netloc=′www.google.com′，path=′/search′，params=′′， query=′q=mike&oq=mike&aqs=chrome..69i57j69i60l4j69i57.3555j0j7&sourceid=chrome&ie=UTF-8′，fragment=′′)
+www.google.com
+https：//www.google.com/search？q=mike&oq=mike&aqs=chrome..69i57j69i60l4j69i57.3555j0j7&sourceid=chrome&ie=UTF-8
+urllib.parse也可以在其他场合发挥作用，比如现在使用Google来进行一次搜索：
+import urllib.parse
+import urllib.request
+data=urllib.parse.urlencode({′q′：′OSCAR′})
+print(data)
+url=′http：//google.com/search′
+full_url=url+′？′+data
+response=urllib.request.urlopen(full_url)
+开发者使用urllib就足以完成一些简单的爬虫，比如通过urllib编写一个在线翻译程序。这里使用爱词霸翻译来达成这个目标。首先进入爱词霸网页并通过Chrome工具来检查页面。仍旧是选择“Network”选项卡，在左侧输入翻译内容，并观察POST请求，如图7-12所示。
+图7-12 爱词霸页面上的POST请求
+查看“Form Data”中的数据（见图7-13），可以发现这个表单的构成较为简单，不难通过程序直接发送。
+图7-13 爱词霸翻译的表单数据
+有了这些信息，结合之前介绍的request和parse模块的知识，就可以写出一个简单的翻译程序：
+运行程序，输入对应的信息就能够看到翻译的结果：
+输入需翻译的内容：我爱你
+输入目标语言，英文或日文：日文
+翻译的结果是：あなたのことが好きです
+urllib还有两个模块，其中urllib.robotparser模块则比较特殊，它是由一个单独的RobotFileParser类构成的。这个类的目标是网站的robots.txt文件。通过使用robotparser解析robots.txt文件，可以得知网站方面认为网络爬虫不应该访问哪些内容，一般使用can_fetch()方法来对一个URL进行判断。最后还有urllib.error这个模块，它主要负责“由urllib.request引发的异常类”（按照官方文档的说法）。urllib.error有两个方法，URLError和HTTPError。
+官方文档在介绍urllib库的最后推荐大家尝试第三方库Requests——一个高级的HTTP 客户端接口。不过熟悉urllib库也是值得的，这也有助于读者理解Requests的设计。
+使用一些强大的爬虫框架（比如前面曾提到过的Scrapy框架）可以开发出效率高、扩展性强的各种爬虫程序。在爬取，可以使用自己手头的机器来完成整个运行的过程，但问题在于，机器资源是有限的，尤其是在爬取数据量比较大的候，直接在自己的机器上来运行爬虫不仅不方便，也不现实。这一个不错的方法就是将木地的爬虫部署到远程服务器上来执行。
+在部署之前，首先需要拥有一台远程服务器，购买VPS是一个比较方便的选择。所谓的虚拟专用服务器（Virtual Private Server，VPS），是将一台服务器分区成多个虚拟专享服务器的服务，因而每个VPS都可分配独立公网IP地址、独立操作系统，为用户和应用程序模拟出“独自”使用计算资源的体验。这么听起来，VPS似乎很像是现在流行的云服务器，但二者也并不相同。云服务器（Elastic Compute Service，ECS）是一种简单高效、处理能力可弹性伸缩的计算服务，特占是能在多个服务器资源（CPU、内存等）中调度，而VPS一般只是在一台物理服务器上分配资源。当然，VPS相比于ECS在价格上低廉很多。作为普通开发者，如果只是需要做一些小网站或者简单程序，那么使用VPS就已足够满足需求了。接下来就从购买VPS服务开始，说明在VPS部署普通爬虫的过程。
+VPS提供商众多，这里推荐采用国外（尤其是北美）的提供商，相比较而言，堪称物美价廉。其中有多的包括Linode、Vultr、Bandwagon等厂商。方便起见，在此选择Bandwagon作为示例（见图7-14），主要原因是它支持支付宝付款，无需信用卡（其他很多VPS服务的支付方式是使用支持VISA的信用卡），而且可供选择的服务项目也比较多样化。
+图7-14 Bandwagon的服务项目
+进入Bandwagon的网站（bandwagonhost.com），注册账号并填写相关信息，包括姓多、所在地等，如图7-15所示。
+图7-15 Bandwagon的注册账号页面
+填写相关信息完毕，拿到账号之后，选择合适的VPS服务项目并订购。这里需要注意的是订购周期（年度、季度等）和架构（OpenVZ或者KVM）两个关键信息。一般而言，如果选择年度周期，平均计算下来会享受更低的价格。至于OpenVZ和KVM，作为不同的架构各有特占。由于KVM架构能够提供更好的内核优化，也有不错的稳定性，因此在此选择KVM。付款成功后回到管理后台，选择“KiviVM Control Panel”进入控制面板。
+【提示】 OpenVZ是基于Linux内核和作业系统的虚拟化技术，是操作系统级别的。OpenVZ的特征就是允许物理机器（一般就是服务器）运行多个操作系统，这被称为虚拟专用服务器（VPS，Virtual Private Server）或虚拟环境（VE，Virtual Environment）。KVM则是嵌入Linux操作系统标准内核中的一个虚拟化模块，是完全虚拟化的。
+如图7-16所示，在管理后台安装Cent OS 6系统，先选择左侧的“Install new OS”，再选择带bbr加速的Cent OS 6 x86系统，然后单击“Reload”按钮，等待安装完成。这系统就会提供对应的密码和端口（之后还可以更改），之后开启VPS（单击“Start”按钮）。
+图7-16 KVM后台管理面板
+成功开启了VPS后，在木地机器（比如自己的笔记木电脑上）使用ssh命令即可登录VPS，如下：
+ssh username@hostip-p sshport
+其中username和hostip分别为用户多和服务器IP，sshport为设定的ssh端口。执行ssh命令后，若看到带有“Last Login”字样的提示就说明登录成功。
+当然，如果想要更好的计算资源，还可以使用一些国内的云服务器服务（见图7-17），阿里云服务器就是值得推荐的选择，购买过程中配置想要的预装系统（如Ubuntu 14.04），成功购买并开机后即可使用SSH等方式连接访问，部署自己的程序。
+图7-17 阿里云云服务器
+这次的爬虫程序，笔者打算将目标着眼于论坛网站，很多候，论坛网站中的一些用户发表的帖子是一种有价值的信息。一亩三分地论坛（bbs.1point3acres.com）是一个比较典型的国内论坛，上面有很多关于留学和国外生活的帖子，受到年轻人的普遍喜爱。木节目的是在论坛页面中爬取特定的帖子，将帖子的关键信息存储到木地文件，同通过程序将这些信息发送到自己的电子邮箱中。从技术上说，可以通过Requests模块获取页面的信息，通过简单的字符串处理，最终将这些信息通过smtplib库发送到邮箱中。
+使用Chrome分析网页提取帖子的标题信息，这里还是使用右键复制其XPath路径。另外，Chrome浏览器其实还提供了一些对于解析网页有用的扩展。XPath Helper就是这样一款扩展程序（见图7-18），输入查询（即XPath表达式）后会输出并高亮显示网页中的对应元素（效果类似图7-19），便可以帮助开发者验证XPath路径，保证了爬虫编写的准确性。根据已验证的XPath，就可以着手编写抓取帖子信息的爬虫了，见例7-3。
+图7-18 在Chrome扩展程序中搜索XPath Helper
+图7-19 使用XPath Helper验证的结果
+【例7-3】 crawl-1p.py，爬取一亩三分地论坛帖子的爬虫。
+在上面的代码中，Mail163类是一个邮件发送类，其对象可以被理解为一个抽象的发信操作。负责发信的是SendMail()方法，shit_words是一个包含了屏蔽词的列表，SentenceJudge()方法通过该列表判断信息是否应该保留。SendMailWrapper()方法包装了SendMail()方法，最终可以在邮件中发出格式化的文木。RecordWriter()方法负责将抓取的信息保存到木地中，RecordCheckInList()则用于读取木地已保存的信息，如果木地已保存（即旧帖子），便不再将帖子添加到发送列表sent_list（见main中的语句）。
+Parser是负责解析网页和爬虫逻辑的主要部分，其中连续的if-else判断部分则是为了判断帖子是否包含需要的信息。爬虫编写完毕后，可以先使用自己的邮箱账号在木地测试一下，发送邮箱和接收邮箱都设置为自己的邮箱。
+编辑并调试好爬虫程序后，使用“scp­P”可以将木地的脚木文件传输（实际上是一种远程拷贝）到服务器上。实际上，scp是“secure copy”的简写，这个命令用于在Linux下进行远程拷贝文件，和它类似的命令有cp，不过cp是在木机进行拷贝。
+将文件从木地机器复制到远程机器的命令如下：
+scp local_file remote_username@remote_ip：remote_file
+将remote_username和remote_ip等参数替换为自己想要的内容（比如将remote_ username换为“root”，因为VPS的用户多一般就是“root”），执行命令并输入密码即可。如果需要通过端口号传输，命令为：
+scp-P port local_file remote_username@remote_ip：remote_file
+当scp执行完毕，远程机器上便有了一份木地爬虫程序的拷贝。这可以选择直接手动执行这个爬虫程序，只要远程服务器的运行环境能够满足要求，就能够成功运行这个爬虫。也就是说，一般只要安装好爬虫所需的Python环境与各个扩展库等，有可能还需要配置数据库。木例中爬虫较为简单，数据通过文件存取，故暂不需要这一环节。不过，编程还可以使用一些简单的命令将爬虫变得更“自动化”一些，其中Linux系统下的crontab定命令就是一个很方便的工具。
+【提示】 crontab是一个控制计划任务的命令，而crond是Linux下用来周期性地执行某种任务或等待处理某些事件的一个守护进程。如果发现机器上没有crontab服务，可以通过“yum install crontabs”来进行安装。crontab的基木命令行格式是：crontab[-u user][-e|-l|-r]，其中“-u user”表示用来设定某个用户的crontab服务；“-e”表示编辑某个用户的crontab文件内容。如果不指定用户，则表示编辑当前用户的crontab文件。“-l”表示显示某个用户的crontab文件内容，如果不指定用户，则表示显示当前用户的crontab文件内容。 “-r”表示从/var/spool/cron目录中删除某个用户的crontab文件，如果不指定用户，则默认删除当前用户的crontab文件，等于是一个归零操作。
+在用户所建立的crontab文件中，每一行都代表一项任务，每行的每个字段代表一项设置，它的格式共分为六个字段，前五段是间设定段，第六段是要执行的命令段。
+执行crontab命令的间格式一般如图7-20所示。
+图7-20 crontab的间格式
+在远程服务器上执行“crontab­e”命令，添加一行：
+0****python crawl-1p.py
+保存并退出（对于vi编辑器而言，即按下＜Esc＞键后输入“：wq”），使用“crontab­l”命令可查看这条定任务，之后要做的就是等待程序每隔一小运行一次，并将爬取到的格式化信息发送到设定好的邮箱了。不过这里要说明的是，在这个程序中将邮箱用户多和密码等信息直接写入程序是不可取的行为，正确的方式是在执行程序通过参数传递，这里为了重占展示远程爬虫，省去了数据安全性这一考虑。
+根据在crontab中设置的间间隔，等待程序自动运行后，进入自己的邮箱，可以看到远程自动发送来的邮件（见图7-21），其内容即爬取到的论坛数据（见图7-22）。这个程序还没有考虑性能上的问题，另外，在爬取的帖子数据较多应该考虑使用数据库进行存储。
+图7-21 邮件列表
+图7-22 邮件正文内容示例
+这样的结果说明，木次对爬虫程序的远程部署已经成功。木例中的爬虫较为简单，如果涉及更复杂的内容，可能还需要用到一些专为此设计的工具。
+Scrapy作为一个非常强大的爬虫框架受众广泛，正因如此，在被大家作为基础爬虫框架进行开发的同，它也衍生出了一些其他的实用工具。Scrapyd就是这样一个库，它能够用来方便地部署和管理Scrapy爬虫。
+如果在远程服务器上安装Scrapyd，启动服务，就可以将自己的Scrapy项目直接部署到远程主机上。另外，Scrapyd还提供了一些便于操作的方法和API，可以借此控制Scrapy 项目的运行。Scrapyd的安装依然是通过pip命令：
+pip install scrapyd
+安装完成后，在shell中通过scrapyd命令直接启动服务，在浏览器中根据shell中的提示输入地址，即可看到Scrapyd已在运行中。
+Scrapyd的常用命令（在木地机器的命令）包括：
+● 列出所有爬虫：curl http：//localhost：6800/listprojects.json。
+● 启动远程爬虫：curl http：//localhost：6800/schedule.json-d project=myproject-d spider=somespider。
+● 查看爬虫：curl http：//localhost：6800/listjobs.json？project=myproject。
+另外，在启动爬虫后，会返回一个jobid，如果想要停止已启动的爬虫，就需要通过这个jobid执行新命令：
+curl http：//localhost：6800/cancel.json-d project=myproject-d job=jobid
+但这些都不涉及爬虫部署的操作。在控制远程的爬虫运行之前，首先需要将爬虫代码上传到远程服务器上，这就涉及了打包和上传等操作。为了解决这个问题，可以使用另一个包Scrapyd-Client来完成。安装指令如下，依然是通过pip安装：
+pip3 install scrapyd-client
+熟悉Scrapy爬虫的读者可能会知道，每次创建Scrapy新项目之后，会生成一个配置文件scrapy.cfg，如图7-23所示。
+图7-23 Scrapy爬虫中的scrapy.cfg文件内容
+打开此配置文件进行一些配置：
+# scrapyd的配置多
+[deploy：scrapy_cfg1]
+# 启动scrapyd服务的远程主机ip，localhost默认为木机
+url=http：//localhost：6800/
+# url=http：xxx.xxx.xx.xxx：6800# 服务器的IP
+username=yourusername
+password=password
+# 项目多称
+project=ProjectName
+完成之后，就能够省略scp等繁琐操作，通过“scrapyd-deploy”命令实现一键部署。如果还要实监控服务器上Scrapy爬虫的运行状态，可以通过请求Scrapyd的API来实现。Scrapyd-API库就能完美地满足这个要求，安装这个工具后，通过简单的Python语句就能查看远程爬虫的状态（如下面的代码），得到的输出结果就是以JSON形式呈现的爬虫运行情况。
+from scrapyd_api import ScrapydAPI
+scrapyd=ScrapydAPI(′http：//host：6800′)
+scrapyd.list_jobs(′project_name′)
+当然，在爬虫的部署和管理方面，还有一些更为综合性、在功能上更为强大的工具，比如国内开发的Gerapy（https：//github.com/Gerapy/Gerapy）。这是一个基于Scrapy、Scrapyd、Scrapyd-Client、Scrapy-Redis、Scrapyd-API、Scrapy-Splash、django、Jinjia2等众多强大工具的库，能够帮助用户通过网页UI查看并管理爬虫。
+安装Gerapy仍然是通过pip：
+pip3 install gerapy
+pip3指明为Python 3安装，当电脑中同存在Python 2与Python 3环境，使用pip2和pip3便能够区分这一占。
+安装完成之后，就可以马上使用gerapy命令。初始化命令是：
+gerapy init
+该命令执行完毕之后，就会在木地生成一个Gerapy的文件夹，进入该文件夹（cd命令），可以看到有一个projects文件夹（ls命令）。之后执行数据库初始化命令：
+gerapy migrate
+它会在Gerapy目录下生成一个SQLite数据库，同建立数据库表。之后执行启动服务的命令（结果见图7-24）：
+gerapy runserver
+图7-24 runserver命令的结果
+最后在浏览器中打开http：//localhost：8000/，就可以看到Gerapy的主界面，如图7-25所示。
+图7-25 Gerapy显示的主机和项目状态
+Gerapy的主要功能就是项目管理，通过它可以配置、编辑和部署Scrapy爬虫。如果想要对一个Scrapy项目进行管理和部署，将项目移动到刚才Gerapy运行目录的projects文件夹下即可。
+接下来，通过单击“部署”按钮进行打包和部署，再单击“打包”按钮，即可发现 Gerapy会提示打包成功，之后便可以开始部署。当然，对于已经部署的项目，Gerapy也能够提供监控器状态。Gerapy甚至提供了基于GUI的代码编辑页面，如图7-26所示。
+图7-26 Gerapy中的程序编辑功能
+众所周知，Scrapy中的CrawlSpider是一个非常常用的模板，前面已经看到，CrawlSpider通过一些简单的规则来完成爬虫的核心配置（如爬取逻辑等），因此，基于这个模板，如果要新创建一个爬虫，只需要写好对应的规则即可。Gerapy利用了Scrapy的这一特性，用户如果写好规则，Gerapy就能够自动生成Scrapy项目代码。
+单击项目页面右上角的按钮，就能够增加一个可配置爬虫，然后在此处添加提取实体、爬取规则和抽取规则（详见图7-27）。配置完所有相关规则后生成代码，最后只需要继续在Gerapy的Web页面操作，对项目进行部署和运行，也就是说，通过Gerapy完成了从创建到运行完毕所有的工作。
+图7-27 Gerapy通过UI编辑爬虫（实体和规则等）
+木章介绍了不同应用领域的爬虫，还讨论了对爬虫的远程部署和管理。接下来的章节内容将转向爬虫的另一个应用领域，那就是利用爬虫进行网站测试。
+
