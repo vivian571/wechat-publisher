@@ -12,6 +12,11 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, Optional
 
+PROXY_URL = "http://127.0.0.1:3067"  
+
+os.environ["HTTP_PROXY"] = PROXY_URL
+os.environ["HTTPS_PROXY"] = PROXY_URL
+
 # 支持多种AI提供商
 try:
     from openai import OpenAI
@@ -174,7 +179,9 @@ class ContentGenerator:
                 generation_config={
                     "temperature": gen_settings.get("temperature", 0.7),
                     "max_output_tokens": gen_settings.get("max_tokens", 2000)
-                }
+    
+                },
+                request_options={"timeout": 600}  
             )
             return response.text
         
@@ -182,26 +189,23 @@ class ContentGenerator:
             raise ValueError(f"Unsupported AI provider: {provider}")
     
     def _markdown_to_html(self, markdown_content: str) -> str:
-        """将Markdown转换为带样式的HTML"""
+        """将Markdown转换为纯净的HTML（无样式）"""
         # 使用markdown库转换，支持代码高亮、表格等扩展
         html_body = markdown.markdown(
             markdown_content,
             extensions=['fenced_code', 'tables', 'nl2br', 'sane_lists']
         )
         
-        # 组装完整的HTML文档
+        # 组装完整的HTML文档（不包含CSS样式）
         html_template = f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WeChat Article</title>
-    {self.css_template}
 </head>
 <body>
-<div id="js_content">
 {html_body}
-</div>
 </body>
 </html>"""
         
