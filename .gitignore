@@ -4,6 +4,8 @@ config.json
 *.key
 *.pem
 .env
+**/account_config.json
+美国节点.txt
 
 # Logs
 *.log
