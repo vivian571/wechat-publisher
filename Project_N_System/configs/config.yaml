@@ -1,0 +1,23 @@
+# Project N 运行配置
+
+# ADB 设备配置
+device_id: null  # 自动检测第一个连接的设备
+
+# 自动刷视频配置
+auto_browse:
+  duration_minutes: 10  # 默认运行时长(分钟)
+  swipe_interval: 2     # 滑动间隔(秒)
+  watch_min: 3          # 最小观看时长(秒)
+  watch_max: 15         # 最大观看时长(秒)
+
+# 日志配置
+logging:
+  level: INFO           # DEBUG, INFO, WARNING, ERROR
+  save_screenshots: true  # 是否保存截图
+  max_screenshots: 100  # 最多保存截图数量
+
+# 功能开关
+features:
+  enable_screenshot: true   # 启用截图功能
+  enable_analysis: true     # 启用内容分析
+  enable_interaction: false # 启用互动(点赞/评论)

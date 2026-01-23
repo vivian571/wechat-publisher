@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <style>
+        @keyframes gradient-flow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            margin: 0;
+            padding: 16px;
+            background-color: #f4f7f9;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .card {
+            position: relative;
+            line-height: 1.75;
+            color: #24292e;
+            font-size: 16px;
+            word-wrap: break-word;
+            font-family: 'PingFang SC', 'SF Pro Text', 'Microsoft YaHei', sans-serif;
+            background: white;
+            overflow: hidden;
+            border-radius: 16px;
+            border: 1px solid #eef2f5;
+            box-shadow: 0 8px 32px rgba(0, 30, 80, 0.08);
+            margin: 20px auto;
+            max-width: 750px;
+        }
+
+        .card-header {
+            height: 10px;
+            background: linear-gradient(-45deg, #6a11cb, #2575fc, #ec77ab, #7873f5);
+            background-size: 400% 400%;
+            animation: gradient-flow 15s ease infinite;
+        }
+
+        .card-content {
+            padding: 16px 32px;
+        }
+
+        .card-content-inner {
+            padding: 24px 0;
+        }
+
+        .card-content-inner h1, .card-content-inner h2, .card-content-inner h3, .card-content-inner h4, .card-content-inner h5, .card-content-inner h6 {
+            color: #1a202c;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-top: 2em;
+            margin-bottom: 1em;
+        }
+
+        .card-content-inner h3 {
+            margin-top: 16px;
+            margin-bottom: 16px;
+            padding: 0.5em 1em 0.5em 12px;
+            font-size: 1.2em;
+            border-radius: 6px;
+            line-height: 1.6;
+            border-left: 4px solid #1677ff;
+            border-right: 1px solid rgba(22, 119, 255, 0.1);
+            border-bottom: 1px solid rgba(22, 119, 255, 0.1);
+            border-top: 1px solid rgba(22, 119, 255, 0.1);
+            background: rgba(22, 119, 255, 0.05);
+            color: #1677ff;
+            font-weight: 600;
+        }
+
+        .card-content-inner p {
+            font-size: 16px;
+            line-height: 2;
+            color: #1c1f23;
+            margin-bottom: 16px;
+            padding: 0 2px;
+        }
+
+        .card-content-inner strong {
+            font-weight: 600;
+            color: #1c1f23;
+            padding: 0 2px;
+            background: rgba(0, 102, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        .card-content-inner code {
+            background-color: #eaecef;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            background: rgba(0, 0, 0, 0.04);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #fa2c19;
+            border-bottom: 2px solid rgba(250, 44, 25, 0.1);
+        }
+
+        .card-content-inner hr {
+            margin: 24px 0;
+            border: 0;
+            height: 1px;
+            background-color: #eaecef;
+        }
+
+        .card-content-inner ul, .card-content-inner ol {
+            padding-left: 24px;
+            margin-bottom: 1.25em;
+        }
+
+        .card-content-inner li {
+            margin-bottom: 0.75em;
+            color: #4a5568;
+            line-height: 1.8;
+        }
+
+        .card-content-inner li > p {
+            margin: 0;
+        }
+
+        .card-content-inner pre {
+            background-color: #1a202c;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 2em 0;
+        }
+
+        .card-content-inner pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+            font-size: 0.9em;
+            border-bottom: none;
+        }
+
+        .card-content-inner blockquote {
+            border-left: 5px solid #1677ff;
+            padding: 16px 20px;
+            margin: 2em 0;
+            background-color: rgba(22, 119, 255, 0.05);
+            color: #1c1f23;
+            font-style: normal;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .card-content-inner blockquote p {
+            margin: 0;
+            font-size: 16px;
+            color: #1c1f23;
+        }
+
+        .card-content-inner img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            display: block;
+            margin: 2em auto;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-footer {
+            height: 4px;
+            background-color: #eef2f5;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="cascade-article-wrapper" class="card">
+        <div class="card-header"></div>
+        <div class="card-content">
+            <div class="card-content-inner">
+                {{content_placeholder}}
+            </div>
+        </div>
+        <div class="card-footer"></div>
+    </div>
+</body>
+</html>

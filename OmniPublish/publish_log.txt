@@ -1,0 +1,215 @@
+[32m2026-01-01 16:46:52[0m | [34m[1mDEBUG   [0m | [34m[1m日志系统已初始化,级别: DEBUG[0m
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=1, microseconds=493515), 'exception': None, 'extra': {}, 'file': (name='main.py', path='F:\\公众号写作\\OmniPublish\\main.py'), 'function': 'main', 'level': (name='INFO', no=20, icon='\u2139\ufe0f'), 'line': 167, 'message': '\U0001f680 OmniPublish 启动', 'module': 'main', 'name': '__main__', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 52, 35807, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\U0001f680' in position 54: illegal multibyte sequence
+--- End of logging error ---
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=1, microseconds=517635), 'exception': None, 'extra': {}, 'file': (name='main.py', path='F:\\公众号写作\\OmniPublish\\main.py'), 'function': 'main', 'level': (name='INFO', no=20, icon='\u2139\ufe0f'), 'line': 168, 'message': '\U0001f4c5 版本: 1.0.0', 'module': 'main', 'name': '__main__', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 52, 59927, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\U0001f4c5' in position 54: illegal multibyte sequence
+--- End of logging error ---
+[32m2026-01-01 16:46:52[0m | [33m[1mWARNING [0m | [33m[1m环境变量未设置: MEDIUM_TOKEN[0m
+[32m2026-01-01 16:46:52[0m | [33m[1mWARNING [0m | [33m[1m环境变量未设置: WECHAT_APPID[0m
+[32m2026-01-01 16:46:52[0m | [33m[1mWARNING [0m | [33m[1m环境变量未设置: WECHAT_SECRET[0m
+[32m2026-01-01 16:46:52[0m | [34m[1mDEBUG   [0m | [34m[1m加载配置文件: config.yaml[0m
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=1, microseconds=777306), 'exception': None, 'extra': {}, 'file': (name='main.py', path='F:\\公众号写作\\OmniPublish\\main.py'), 'function': 'main', 'level': (name='WARNING', no=30, icon='\u26a0\ufe0f'), 'line': 197, 'message': '\u26a0\ufe0f 图床客户端初始化失败,将跳过图片处理: Invalid endpoint: https://your_r2_account_id.r2.cloudflarestorage.com', 'module': 'main', 'name': '__main__', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 52, 319598, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "F:\公众号写作\OmniPublish\main.py", line 187, in main
+    r2_client = CloudflareR2Client(
+  File "F:\公众号写作\OmniPublish\utils\r2_client.py", line 31, in __init__
+    self.s3 = boto3.client(
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\boto3\__init__.py", line 92, in client
+    return _get_default_session().client(*args, **kwargs)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\boto3\session.py", line 299, in client
+    return self._session.create_client(
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\botocore\session.py", line 997, in create_client
+    client = client_creator.create_client(
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\botocore\client.py", line 161, in create_client
+    client_args = self._get_client_args(
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\botocore\client.py", line 520, in _get_client_args
+    return args_creator.get_client_args(
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\botocore\args.py", line 138, in get_client_args
+    endpoint = endpoint_creator.create_endpoint(
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\botocore\endpoint.py", line 400, in create_endpoint
+    raise ValueError(f"Invalid endpoint: {endpoint_url}")
+ValueError: Invalid endpoint: https://your_r2_account_id.r2.cloudflarestorage.com
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\u26a0' in position 64: illegal multibyte sequence
+--- End of logging error ---
+[32m2026-01-01 16:46:52[0m | [34m[1mDEBUG   [0m | [34m[1m加载状态文件: 2 篇文章[0m
+[32m2026-01-01 16:46:52[0m | [34m[1mDEBUG   [0m | [34m[1m初始化 StateManager: .omnipublish\state.json[0m
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=1, microseconds=936920), 'exception': None, 'extra': {}, 'file': (name='devto_adapter.py', path='F:\\公众号写作\\OmniPublish\\adapters\\devto_adapter.py'), 'function': '__init__', 'level': (name='DEBUG', no=10, icon='\U0001f41e'), 'line': 43, 'message': '\u2705 已启用代理: http://127.0.0.1:3067', 'module': 'devto_adapter', 'name': 'adapters.devto_adapter', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 52, 479212, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\u2705' in position 64: illegal multibyte sequence
+--- End of logging error ---
+[32m2026-01-01 16:46:52[0m | [34m[1mDEBUG   [0m | [34m[1m初始化 DevToAdapter[0m
+[32m2026-01-01 16:46:52[0m | [34m[1mDEBUG   [0m | [34m[1m验证 Dev.to API Key...[0m
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=3, microseconds=373389), 'exception': None, 'extra': {}, 'file': (name='devto_adapter.py', path='F:\\公众号写作\\OmniPublish\\adapters\\devto_adapter.py'), 'function': 'validate_config', 'level': (name='SUCCESS', no=25, icon='\u2705'), 'line': 64, 'message': '\u2705 Dev.to API Key 有效,用户: mysterious_xuanwu_5a00815', 'module': 'devto_adapter', 'name': 'adapters.devto_adapter', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 53, 915681, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\u2705' in position 64: illegal multibyte sequence
+--- End of logging error ---
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=3, microseconds=374396), 'exception': None, 'extra': {}, 'file': (name='main.py', path='F:\\公众号写作\\OmniPublish\\main.py'), 'function': 'init_adapters', 'level': (name='INFO', no=20, icon='\u2139\ufe0f'), 'line': 42, 'message': '\u2705 Dev.to 适配器已启用', 'module': 'main', 'name': '__main__', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 53, 916688, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\u2705' in position 54: illegal multibyte sequence
+--- End of logging error ---
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=3, microseconds=375394), 'exception': None, 'extra': {}, 'file': (name='main.py', path='F:\\公众号写作\\OmniPublish\\main.py'), 'function': 'main', 'level': (name='INFO', no=20, icon='\u2139\ufe0f'), 'line': 211, 'message': '\u2705 已启用 1 个平台适配器', 'module': 'main', 'name': '__main__', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 53, 917686, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\u2705' in position 54: illegal multibyte sequence
+--- End of logging error ---
+[32m2026-01-01 16:46:53[0m | [1mINFO    [0m | [1m
+============================================================[0m
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=3, microseconds=375899), 'exception': None, 'extra': {}, 'file': (name='main.py', path='F:\\公众号写作\\OmniPublish\\main.py'), 'function': 'publish_article', 'level': (name='INFO', no=20, icon='\u2139\ufe0f'), 'line': 90, 'message': '\U0001f4dd 处理文章: 8-developer-tools-2026.md', 'module': 'main', 'name': '__main__', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 53, 918191, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\U0001f4dd' in position 54: illegal multibyte sequence
+--- End of logging error ---
+[32m2026-01-01 16:46:53[0m | [1mINFO    [0m | [1m============================================================
+[0m
+[32m2026-01-01 16:46:53[0m | [34m[1mDEBUG   [0m | [34m[1m初始化 ArticleParser[0m
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=3, microseconds=376905), 'exception': None, 'extra': {}, 'file': (name='parser.py', path='F:\\公众号写作\\OmniPublish\\core\\parser.py'), 'function': 'parse', 'level': (name='INFO', no=20, icon='\u2139\ufe0f'), 'line': 58, 'message': '\U0001f4dd 解析文章: 8-developer-tools-2026.md', 'module': 'parser', 'name': 'core.parser', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 53, 919197, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\U0001f4dd' in position 54: illegal multibyte sequence
+--- End of logging error ---
+[32m2026-01-01 16:46:53[0m | [34m[1mDEBUG   [0m | [34m[1m解析元数据: title=8 Developer Tools That Will Boost Your Workflow in 2026, tags=['productivity', 'developer-tools', 'workflow', 'coding'][0m
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=3, microseconds=376905), 'exception': None, 'extra': {}, 'file': (name='parser.py', path='F:\\公众号写作\\OmniPublish\\core\\parser.py'), 'function': 'validate_metadata', 'level': (name='DEBUG', no=10, icon='\U0001f41e'), 'line': 109, 'message': '\u2705 元数据验证通过', 'module': 'parser', 'name': 'core.parser', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 53, 919197, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\u2705' in position 64: illegal multibyte sequence
+--- End of logging error ---
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=3, microseconds=378410), 'exception': None, 'extra': {}, 'file': (name='main.py', path='F:\\公众号写作\\OmniPublish\\main.py'), 'function': 'publish_article', 'level': (name='WARNING', no=30, icon='\u26a0\ufe0f'), 'line': 107, 'message': '\u26a0\ufe0f 未配置图床,跳过图片处理 (本地图片链接可能无法在平台显示)', 'module': 'main', 'name': '__main__', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 53, 920702, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\u26a0' in position 64: illegal multibyte sequence
+--- End of logging error ---
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=3, microseconds=378410), 'exception': None, 'extra': {}, 'file': (name='main.py', path='F:\\公众号写作\\OmniPublish\\main.py'), 'function': 'publish_article', 'level': (name='INFO', no=20, icon='\u2139\ufe0f'), 'line': 115, 'message': '\U0001f517 自动生成 canonical URL: https://myblog.com/8-developer-tools-2026', 'module': 'main', 'name': '__main__', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 53, 920702, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\U0001f517' in position 54: illegal multibyte sequence
+--- End of logging error ---
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=3, microseconds=378410), 'exception': None, 'extra': {}, 'file': (name='main.py', path='F:\\公众号写作\\OmniPublish\\main.py'), 'function': 'publish_article', 'level': (name='INFO', no=20, icon='\u2139\ufe0f'), 'line': 129, 'message': '\n\U0001f680 发布到 Dev.to...', 'module': 'main', 'name': '__main__', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 53, 920702, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\U0001f680' in position 56: illegal multibyte sequence
+--- End of logging error ---
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=3, microseconds=379417), 'exception': None, 'extra': {}, 'file': (name='devto_adapter.py', path='F:\\公众号写作\\OmniPublish\\adapters\\devto_adapter.py'), 'function': 'publish', 'level': (name='INFO', no=20, icon='\u2139\ufe0f'), 'line': 85, 'message': '\U0001f680 发布文章到 Dev.to: 8 Developer Tools That Will Boost Your Workflow in 2026', 'module': 'devto_adapter', 'name': 'adapters.devto_adapter', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 53, 921709, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\U0001f680' in position 54: illegal multibyte sequence
+--- End of logging error ---
+[32m2026-01-01 16:46:53[0m | [34m[1mDEBUG   [0m | [34m[1m发送请求到 Dev.to API...[0m
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=4, microseconds=747250), 'exception': None, 'extra': {}, 'file': (name='devto_adapter.py', path='F:\\公众号写作\\OmniPublish\\adapters\\devto_adapter.py'), 'function': 'publish', 'level': (name='ERROR', no=40, icon='\u274c'), 'line': 137, 'message': '\u274c Dev.to 发布失败: HTTP 422: {"error":"Tag \\"developer-tools\\" contains non-alphanumeric or prohibited unicode characters","status":422}', 'module': 'devto_adapter', 'name': 'adapters.devto_adapter', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 55, 289542, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\u274c' in position 64: illegal multibyte sequence
+--- End of logging error ---
+[32m2026-01-01 16:46:55[0m | [34m[1mDEBUG   [0m | [34m[1m状态文件已保存[0m
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=4, microseconds=749263), 'exception': None, 'extra': {}, 'file': (name='state_manager.py', path='F:\\公众号写作\\OmniPublish\\core\\state_manager.py'), 'function': 'record_publish', 'level': (name='WARNING', no=30, icon='\u26a0\ufe0f'), 'line': 75, 'message': '\u26a0\ufe0f 记录发布失败: Dev.to - HTTP 422: {"error":"Tag \\"developer-tools\\" contains non-alphanumeric or prohibited unicode characters","status":422}', 'module': 'state_manager', 'name': 'core.state_manager', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 55, 291555, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\u26a0' in position 64: illegal multibyte sequence
+--- End of logging error ---
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=4, microseconds=749263), 'exception': None, 'extra': {}, 'file': (name='main.py', path='F:\\公众号写作\\OmniPublish\\main.py'), 'function': 'publish_article', 'level': (name='ERROR', no=40, icon='\u274c'), 'line': 140, 'message': '\u274c Dev.to: HTTP 422: {"error":"Tag \\"developer-tools\\" contains non-alphanumeric or prohibited unicode characters","status":422}', 'module': 'main', 'name': '__main__', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 55, 291555, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\u274c' in position 64: illegal multibyte sequence
+--- End of logging error ---
+[32m2026-01-01 16:46:55[0m | [1mINFO    [0m | [1m
+============================================================[0m
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=4, microseconds=750763), 'exception': None, 'extra': {}, 'file': (name='main.py', path='F:\\公众号写作\\OmniPublish\\main.py'), 'function': 'publish_article', 'level': (name='INFO', no=20, icon='\u2139\ufe0f'), 'line': 144, 'message': '\U0001f4ca 发布完成! 成功: 0, 失败: 1', 'module': 'main', 'name': '__main__', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 55, 293055, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\U0001f4ca' in position 54: illegal multibyte sequence
+--- End of logging error ---
+[32m2026-01-01 16:46:55[0m | [1mINFO    [0m | [1m============================================================
+[0m
+--- Logging error in Loguru Handler #1 ---
+Record was: {'elapsed': datetime.timedelta(seconds=4, microseconds=750763), 'exception': None, 'extra': {}, 'file': (name='main.py', path='F:\\公众号写作\\OmniPublish\\main.py'), 'function': 'main', 'level': (name='INFO', no=20, icon='\u2139\ufe0f'), 'line': 233, 'message': '\u2705 OmniPublish 执行完成', 'module': 'main', 'name': '__main__', 'process': (id=15564, name='MainProcess'), 'thread': (id=4676, name='MainThread'), 'time': datetime(2026, 1, 1, 16, 46, 55, 293055, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800), '中国标准时间'))}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python310\lib\site-packages\loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+UnicodeEncodeError: 'gbk' codec can't encode character '\u2705' in position 54: illegal multibyte sequence
+--- End of logging error ---

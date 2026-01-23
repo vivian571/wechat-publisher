@@ -1,0 +1,27 @@
+{
+  "articles\\test-article.md": {
+    "Dev.to": {
+      "success": true,
+      "url": "https://dev.to/mysterious_xuanwu_5a00815/omnipublish-ce-shi-wen-zhang-24h1",
+      "article_id": "3140445",
+      "published_at": "2026-01-01T14:28:35.610078",
+      "error": null
+    },
+    "Hashnode": {
+      "success": false,
+      "url": null,
+      "article_id": null,
+      "published_at": "2026-01-01T14:28:36.547839",
+      "error": "[{'message': 'Publication not found.', 'locations': [{'line': 2, 'column': 3}], 'path': ['publishPost'], 'extensions': {'type': 'Publication', 'id': '6955bb8f8a5713eab92331d9', 'code': 'NOT_FOUND'}}]"
+    }
+  },
+  "articles\\8-developer-tools-2026.md": {
+    "Dev.to": {
+      "success": false,
+      "url": null,
+      "article_id": null,
+      "published_at": "2026-01-01T16:48:08.430142",
+      "error": "HTTP 422: {\"error\":\"Tag \\\"developer-tools\\\" contains non-alphanumeric or prohibited unicode characters\",\"status\":422}"
+    }
+  }
+}

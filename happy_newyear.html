@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Happy New Year 2026 - Matrix Protocol</title>
+    <style>
+        body { margin: 0; background: #000; color: #0f0; font-family: 'Courier New', Courier, monospace; overflow: hidden; }
+        canvas { position: absolute; top: 0; left: 0; z-index: 1; }
+        #ui-layer { position: absolute; top: 20px; left: 20px; z-index: 10; pointer-events: none; width: 100%; }
+        #log-window { background: rgba(0, 0, 0, 0.7); padding: 10px; border: 1px solid #0f0; width: 350px; height: 250px; overflow: hidden; font-size: 12px; }
+        #countdown { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; text-shadow: 0 0 20px #0f0; z-index: 5; pointer-events: none; }
+        .log-entry { margin-bottom: 2px; }
+        .highlight { color: #fff; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="ui-layer">
+        <div id="log-window">
+            <div class="log-entry highlight">>>> 呈序核心协议 V2025.12.31 已加载...</div>
+            <div id="log-content"></div>
+        </div>
+    </div>
+    <div id="countdown">00:00:00</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"></script>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const logContent = document.getElementById('log-content');
+        const countdownEl = document.getElementById('countdown');
+
+        let width, height, particles = [];
+        const colors = ['#00ffff', '#ff00ff', '#00ff00', '#ffff00', '#ff0000'];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor(x, y, color, isNewYear = false) {
+                this.x = x; this.y = y;
+                this.color = color;
+                const speed = isNewYear ? 15 : 8;
+                const angle = Math.random() * Math.PI * 2;
+                this.vx = Math.cos(angle) * Math.random() * speed;
+                this.vy = Math.sin(angle) * Math.random() * speed;
+                this.alpha = 1;
+                this.friction = 0.96;
+                this.gravity = 0.15;
+            }
+            update() {
+                this.vx *= this.friction; this.vy *= this.friction;
+                this.vy += this.gravity;
+                this.x += this.vx; this.y += this.vy;
+                this.alpha -= 0.01;
+            }
+            draw() {
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function createFirework(x, y, color, isNewYear = false) {
+            for (let i = 0; i < (isNewYear ? 200 : 50); i++) {
+                particles.push(new Particle(x, y, color, isNewYear));
+            }
+        }
+
+        function updateLogs() {
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            const entropy = (0.999 + Math.random() * 0.001).toFixed(6);
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `[${timeStr}] <span class="highlight">ENTROPY: ${entropy}</span> | STATUS: OK`;
+            logContent.prepend(entry);
+            if (logContent.childNodes.length > 15) logContent.lastChild.remove();
+
+            // 倒计时逻辑
+            const nextYear = new Date('2026-01-01T00:00:00');
+            const diff = nextYear - now;
+            if (diff > 0) {
+                const h = Math.floor(diff/3600000).toString().padStart(2, '0');
+                const m = Math.floor((diff%3600000)/60000).toString().padStart(2, '0');
+                const s = Math.floor((diff%60000)/1000).toString().padStart(2, '0');
+                countdownEl.innerText = `${h}:${m}:${s}`;
+                if (s % 5 == 0 && Math.random() < 0.1) createFirework(Math.random()*width, Math.random()*height, colors[Math.floor(Math.random()*colors.length)]);
+            } else {
+                countdownEl.innerText = "2026 READY";
+                countdownEl.style.color = "#ff0000";
+                if (Math.random() < 0.3) createFirework(Math.random()*width, Math.random()*height, '#ff0000', true);
+            }
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0,0,0,0.15)';
+            ctx.fillRect(0, 0, width, height);
+            particles = particles.filter(p => p.alpha > 0);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+
+        setInterval(updateLogs, 1000);
+        canvas.addEventListener('mousedown', (e) => createFirework(e.clientX, e.clientY, colors[Math.floor(Math.random()*colors.length)]));
+        animate();
+    </script>
+</body>
+</html>

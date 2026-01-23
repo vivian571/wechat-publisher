@@ -1,0 +1,9 @@
+requests
+PyYAML
+Pillow
+watchdog
+Markdown
+premailer
+beautifulsoup4
+python-dotenv
+lxml

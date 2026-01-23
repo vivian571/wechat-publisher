@@ -1,0 +1,399 @@
+第4章 数组与链表：构建多元化资产组合
+4.1 资产类型「数组」：股票、基金、房产、数字货币的索引管理
+
+你有没有想过，为什么有些人投资赚钱，有些人投资亏钱？
+关键不在于买了什么，而在于怎么"组合"。
+
+就像编程里的数组，不是单个元素重要，而是整个数组的结构重要。
+今天，我们就用程序员的数组思维，来构建一个科学的资产组合。
+
+一、数组特性在资产管理中的应用
+
+在编程里，数组有三个核心特性：
+1. 随机访问：可以通过索引快速访问任意元素
+2. 顺序存储：元素按顺序排列，便于批量操作
+3. 边界检查：防止越界，保证安全
+
+这三个特性，在资产管理中也非常有用。
+
+特性1：随机访问 = 快速查看任意资产状态
+你的资产组合就像一个数组：
+assets = [股票, 基金, 房产, 数字货币]
+
+你可以随时查看任意一个资产的状态：
+- assets[0] = 股票：当前市值10万，收益率15%
+- assets[1] = 基金：当前市值20万，收益率10%
+- assets[2] = 房产：当前市值100万，收益率5%
+- assets[3] = 数字货币：当前市值5万，收益率-20%
+
+Python代码实现：
+
+```python
+class Asset:
+    """资产类"""
+    
+    def __init__(self, name, asset_type, amount, return_rate):
+        self.name = name
+        self.type = asset_type
+        self.amount = amount
+        self.return_rate = return_rate
+    
+    def get_profit(self):
+        """计算收益"""
+        return self.amount * self.return_rate
+    
+    def __str__(self):
+        profit = self.get_profit()
+        return f"{self.name}（{self.type}）：市值{self.amount:,.0f}元，收益率{self.return_rate*100:.1f}%，收益{profit:,.0f}元"
+
+# 创建资产数组
+assets = [
+    Asset("沪深300", "股票基金", 100000, 0.15),
+    Asset("债券基金", "债券基金", 200000, 0.05),
+    Asset("自住房", "房产", 1000000, 0.03),
+    Asset("比特币", "数字货币", 50000, -0.20)
+]
+
+# 随机访问：查看任意资产
+print("查看第1个资产：")
+print(assets[0])
+
+print("\n查看第3个资产：")
+print(assets[2])
+
+# 遍历所有资产
+print("\n所有资产：")
+for i, asset in enumerate(assets):
+    print(f"{i+1}. {asset}")
+```
+
+特性2：顺序存储 = 资产分类与批量操作
+你可以把资产按类型分类存储：
+- 现金类：[货币基金, 银行存款]
+- 固定收益类：[债券基金, 定期存款]
+- 权益类：[股票基金, 股票]
+- 另类投资：[房产, 黄金, 数字货币]
+
+这样，你可以批量操作同一类资产。
+
+Python代码实现：
+
+```python
+class AssetPortfolio:
+    """资产组合"""
+    
+    def __init__(self):
+        self.cash_assets = []      # 现金类
+        self.fixed_income = []     # 固定收益类
+        self.equity = []           # 权益类
+        self.alternative = []      # 另类投资
+    
+    def add_asset(self, asset, category):
+        """添加资产"""
+        if category == "现金":
+            self.cash_assets.append(asset)
+        elif category == "固定收益":
+            self.fixed_income.append(asset)
+        elif category == "权益":
+            self.equity.append(asset)
+        elif category == "另类":
+            self.alternative.append(asset)
+    
+    def get_category_total(self, category):
+        """计算某类资产的总市值"""
+        assets_list = {
+            "现金": self.cash_assets,
+            "固定收益": self.fixed_income,
+            "权益": self.equity,
+            "另类": self.alternative
+        }.get(category, [])
+        
+        return sum(asset.amount for asset in assets_list)
+    
+    def get_total_assets(self):
+        """计算总资产"""
+        return (self.get_category_total("现金") +
+                self.get_category_total("固定收益") +
+                self.get_category_total("权益") +
+                self.get_category_total("另类"))
+    
+    def print_allocation(self):
+        """打印资产配置"""
+        total = self.get_total_assets()
+        
+        print("资产配置：")
+        print("-" * 50)
+        
+        categories = ["现金", "固定收益", "权益", "另类"]
+        for category in categories:
+            amount = self.get_category_total(category)
+            percentage = (amount / total * 100) if total > 0 else 0
+            print(f"{category:8} {amount:>12,.0f}元 ({percentage:>5.1f}%)")
+        
+        print("-" * 50)
+        print(f"{'总资产':8} {total:>12,.0f}元 (100.0%)")
+
+# 使用示例
+portfolio = AssetPortfolio()
+
+# 添加资产
+portfolio.add_asset(Asset("货币基金", "货币基金", 50000, 0.03), "现金")
+portfolio.add_asset(Asset("债券基金", "债券基金", 200000, 0.05), "固定收益")
+portfolio.add_asset(Asset("沪深300", "股票基金", 300000, 0.12), "权益")
+portfolio.add_asset(Asset("房产", "房产", 1000000, 0.03), "另类")
+
+# 打印资产配置
+portfolio.print_allocation()
+```
+
+特性3：边界检查 = 投资限额与风险控制
+在编程里，数组有边界，不能越界访问。
+在投资里，也要设定边界，防止过度集中。
+
+常见的边界规则：
+- 单一资产不超过总资产的30%
+- 高风险资产不超过总资产的50%
+- 现金类资产不低于总资产的10%
+
+Python代码实现：
+
+```python
+def check_allocation_limits(portfolio):
+    """检查资产配置是否符合限制"""
+    
+    total = portfolio.get_total_assets()
+    
+    print("\n资产配置检查：")
+    print("=" * 50)
+    
+    # 规则1：现金类资产不低于10%
+    cash_ratio = portfolio.get_category_total("现金") / total if total > 0 else 0
+    if cash_ratio >= 0.10:
+        print(f"✅ 现金类资产{cash_ratio*100:.1f}%，符合标准（>= 10%）")
+    else:
+        shortage = (0.10 - cash_ratio) * total
+        print(f"❌ 现金类资产{cash_ratio*100:.1f}%，低于标准")
+        print(f"   建议增加{shortage:,.0f}元现金类资产")
+    
+    # 规则2：权益类资产不超过50%
+    equity_ratio = portfolio.get_category_total("权益") / total if total > 0 else 0
+    if equity_ratio <= 0.50:
+        print(f"✅ 权益类资产{equity_ratio*100:.1f}%，符合标准（<= 50%）")
+    else:
+        excess = (equity_ratio - 0.50) * total
+        print(f"❌ 权益类资产{equity_ratio*100:.1f}%，超出标准")
+        print(f"   建议减少{excess:,.0f}元权益类资产")
+    
+    # 规则3：另类投资不超过30%
+    alt_ratio = portfolio.get_category_total("另类") / total if total > 0 else 0
+    if alt_ratio <= 0.30:
+        print(f"✅ 另类投资{alt_ratio*100:.1f}%，符合标准（<= 30%）")
+    else:
+        excess = (alt_ratio - 0.30) * total
+        print(f"❌ 另类投资{alt_ratio*100:.1f}%，超出标准")
+        print(f"   建议减少{excess:,.0f}元另类投资")
+
+# 检查配置
+check_allocation_limits(portfolio)
+```
+
+二、资产数组设计方案
+
+在编程里，数组可以是一维、二维、多维的。
+资产组合也可以用不同维度来设计。
+
+方案1：一维数组 - 按资产类型分类
+最简单的方案，就是按资产类型分类：
+assets = [现金, 固定收益, 权益, 另类]
+
+优点：简单直观
+缺点：无法细分风险等级
+
+方案2：二维数组 - 资产类型 × 风险等级
+更进阶的方案，是用二维数组：
+```
+           低风险    中风险    高风险
+现金       货币基金   -        -
+固定收益   国债      债券基金   -
+权益       -        指数基金   股票
+另类       黄金      房产      数字货币
+```
+
+Python代码实现：
+
+```python
+class AssetMatrix:
+    """资产矩阵（二维数组）"""
+    
+    def __init__(self):
+        # 二维数组：资产类型 × 风险等级
+        self.matrix = {
+            "现金": {"低风险": [], "中风险": [], "高风险": []},
+            "固定收益": {"低风险": [], "中风险": [], "高风险": []},
+            "权益": {"低风险": [], "中风险": [], "高风险": []},
+            "另类": {"低风险": [], "中风险": [], "高风险": []}
+        }
+    
+    def add_asset(self, asset, category, risk_level):
+        """添加资产到矩阵"""
+        self.matrix[category][risk_level].append(asset)
+    
+    def get_cell_total(self, category, risk_level):
+        """获取某个单元格的总金额"""
+        assets = self.matrix[category][risk_level]
+        return sum(asset.amount for asset in assets)
+    
+    def print_matrix(self):
+        """打印资产矩阵"""
+        print("\n资产配置矩阵：")
+        print("=" * 70)
+        print(f"{'资产类型':12} {'低风险':>15} {'中风险':>15} {'高风险':>15}")
+        print("-" * 70)
+        
+        total_by_category = {}
+        total_by_risk = {"低风险": 0, "中风险": 0, "高风险": 0}
+        grand_total = 0
+        
+        for category in ["现金", "固定收益", "权益", "另类"]:
+            row_total = 0
+            row_data = []
+            
+            for risk in ["低风险", "中风险", "高风险"]:
+                amount = self.get_cell_total(category, risk)
+                row_data.append(f"{amount:>15,.0f}")
+                row_total += amount
+                total_by_risk[risk] += amount
+            
+            total_by_category[category] = row_total
+            grand_total += row_total
+            
+            print(f"{category:12} {' '.join(row_data)}")
+        
+        print("-" * 70)
+        
+        # 打印列总计
+        col_totals = [f"{total_by_risk[risk]:>15,.0f}" for risk in ["低风险", "中风险", "高风险"]]
+        print(f"{'风险总计':12} {' '.join(col_totals)}")
+        
+        print("=" * 70)
+        print(f"总资产：{grand_total:,.0f}元")
+        
+        # 打印风险分布
+        print("\n风险分布：")
+        for risk in ["低风险", "中风险", "高风险"]:
+            percentage = (total_by_risk[risk] / grand_total * 100) if grand_total > 0 else 0
+            print(f"{risk:8} {total_by_risk[risk]:>12,.0f}元 ({percentage:>5.1f}%)")
+
+# 使用示例
+matrix = AssetMatrix()
+
+# 添加资产
+matrix.add_asset(Asset("货币基金", "货币基金", 50000, 0.03), "现金", "低风险")
+matrix.add_asset(Asset("国债", "国债", 100000, 0.04), "固定收益", "低风险")
+matrix.add_asset(Asset("债券基金", "债券基金", 150000, 0.05), "固定收益", "中风险")
+matrix.add_asset(Asset("沪深300", "指数基金", 200000, 0.12), "权益", "中风险")
+matrix.add_asset(Asset("科技股", "股票", 100000, 0.20), "权益", "高风险")
+matrix.add_asset(Asset("黄金", "黄金", 50000, 0.03), "另类", "低风险")
+matrix.add_asset(Asset("房产", "房产", 1000000, 0.05), "另类", "中风险")
+
+# 打印矩阵
+matrix.print_matrix()
+```
+
+方案3：多维数组 - 跨市场、跨币种组合
+最复杂的方案，是用多维数组，考虑更多维度：
+- 维度1：资产类型
+- 维度2：风险等级
+- 维度3：市场（国内/海外）
+- 维度4：币种（人民币/美元）
+
+这种方案适合高净值人士，资产配置更加多元化。
+
+三、实战案例：构建个人资产配置矩阵
+
+让我们看一个真实的案例。
+
+小李，30岁，程序员，总资产150万。
+他的风险偏好是"平衡型"。
+
+根据平衡型的标准配置：
+- 低风险：30%（45万）
+- 中风险：50%（75万）
+- 高风险：20%（30万）
+
+他的资产配置矩阵：
+
+```
+资产类型      低风险          中风险          高风险
+现金          5万（货币基金）  -              -
+固定收益      20万（国债）    30万（债券基金） -
+权益          -              40万（指数基金） 30万（股票）
+另类          20万（黄金）    5万（房产首付）  -
+```
+
+检查结果：
+- 低风险：45万（30%）✅
+- 中风险：75万（50%）✅
+- 高风险：30万（20%）✅
+
+完美符合平衡型配置！
+
+四、避坑指南：资产配置的5个常见错误
+
+错误1：过度集中在单一资产
+很多人把所有钱都买房，或者全部炒股。
+一旦这个资产暴跌，就血本无归。
+
+正确做法：
+用二维数组思维，分散到不同资产类型和风险等级。
+
+错误2：忽视流动性
+很多人把大部分钱都投到房产、定期存款等低流动性资产。
+结果急需用钱时，只能割肉卖掉。
+
+正确做法：
+至少保留10-20%的高流动性资产（货币基金、银行存款）。
+
+错误3：风险等级不匹配
+保守型的人去炒股，进取型的人买国债。
+结果要么承受不了波动，要么收益太低。
+
+正确做法：
+根据自己的风险偏好，选择合适的资产配置比例。
+
+错误4：不做再平衡
+市场波动会导致资产配置偏离目标。
+比如，股票涨了，权益类占比从50%变成了70%。
+
+正确做法：
+每季度或每半年做一次再平衡，卖出涨多的，买入跌多的。
+
+错误5：追涨杀跌
+很多人看到股市大涨就加仓，看到大跌就割肉。
+结果买在高点，卖在低点。
+
+正确做法：
+坚持资产配置策略，定期定投，不要频繁调整。
+
+五、本节小结
+
+数组思维在资产管理中的应用：
+1. 随机访问：快速查看任意资产状态
+2. 顺序存储：资产分类与批量操作
+3. 边界检查：投资限额与风险控制
+
+资产数组设计方案：
+1. 一维数组：按资产类型分类
+2. 二维数组：资产类型 × 风险等级
+3. 多维数组：跨市场、跨币种组合
+
+标准资产配置比例：
+- 保守型：低风险60%，中风险30%，高风险10%
+- 平衡型：低风险30%，中风险50%，高风险20%
+- 进取型：低风险10%，中风险40%，高风险50%
+
+记住：资产配置不是一次性的，而是一个持续优化的过程。
+用数组思维，建立清晰的资产结构。
+定期检查，定期再平衡，才能实现长期稳健增长。
+
+下一节，我们将学习"流动性链表"，探讨如何设计资金的快速转换逻辑。

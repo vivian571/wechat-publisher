@@ -1,0 +1,60 @@
+name: OmniPublish Auto Publish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'articles/**/*.md'
+  workflow_dispatch:
+    inputs:
+      article_path:
+        description: '指定要发布的文章路径'
+        required: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout 代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      
+      - name: 🐍 设置 Python 环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: 📦 安装依赖
+        run: |
+          pip install -r requirements.txt
+      
+      - name: 🚀 发布文章
+        env:
+          DEVTO_API_KEY: ${{ secrets.DEVTO_API_KEY }}
+          HASHNODE_TOKEN: ${{ secrets.HASHNODE_TOKEN }}
+          HASHNODE_PUBLICATION_ID: ${{ secrets.HASHNODE_PUBLICATION_ID }}
+          MEDIUM_TOKEN: ${{ secrets.MEDIUM_TOKEN }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY: ${{ secrets.R2_ACCESS_KEY }}
+          R2_SECRET_KEY: ${{ secrets.R2_SECRET_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+          CANONICAL_BASE_URL: ${{ secrets.CANONICAL_BASE_URL }}
+          LOG_LEVEL: INFO
+        run: |
+          if [ -n "${{ github.event.inputs.article_path }}" ]; then
+            python main.py --file "${{ github.event.inputs.article_path }}"
+          else
+            python main.py --mode auto
+          fi
+      
+      - name: 📊 上传发布报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-report-${{ github.run_number }}
+          path: .omnipublish/
+          retention-days: 30

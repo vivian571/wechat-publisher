@@ -32,6 +32,13 @@ except ImportError:
     GEMINI_AVAILABLE = False
     print("⚠️  Gemini library not installed. Run: pip install google-generativeai")
 
+try:
+    from zhipuai import ZhipuAI
+    ZHIPU_AVAILABLE = True
+except ImportError:
+    ZHIPU_AVAILABLE = False
+    print("⚠️  ZhipuAI library not installed. Run: pip install zhipuai")
+
 
 class ContentGenerator:
     """内容生成器核心类"""
@@ -46,10 +53,10 @@ class ContentGenerator:
         with open(self.base_dir / config_path, 'r', encoding='utf-8') as f:
             self.config = json.load(f)
         
-        # 加载CSS模板
-        css_path = self.templates_dir / "wechat_style.css"
-        with open(css_path, 'r', encoding='utf-8') as f:
-            self.css_template = f.read()
+        
+        # CSS模板不再需要（已改为纯文本输出）
+        self.css_template = ""
+
         
         # 初始化AI客户端
         self.ai_client = self._init_ai_client()
@@ -68,6 +75,9 @@ class ContentGenerator:
             api_config = self.config["api_config"]["gemini"]
             genai.configure(api_key=api_config["api_key"])
             return genai.GenerativeModel(api_config["model"])
+        elif provider == "zhipu" and ZHIPU_AVAILABLE:
+            api_config = self.config["api_config"]["zhipu"]
+            return ZhipuAI(api_key=api_config["api_key"])
         else:
             raise ValueError(f"AI provider '{provider}' not available or not installed")
     
@@ -83,10 +93,13 @@ class ContentGenerator:
         with open(prompt_file, 'r', encoding='utf-8') as f:
             system_prompt = f.read()
         
-        # 读取风格参考
+        # 读取风格参考 (可选)
         style_file = account_path / "style_reference.txt"
-        with open(style_file, 'r', encoding='utf-8') as f:
-            style_reference = f.read()
+        if style_file.exists():
+            with open(style_file, 'r', encoding='utf-8') as f:
+                style_reference = f.read()
+        else:
+            style_reference = "专业、客观、理性，具有前瞻性，语言精炼，排版清晰。"
         
         return {
             "config": account_config,
@@ -116,19 +129,16 @@ class ContentGenerator:
         user_prompt = self._build_user_prompt(account_data, topic)
         
         # 调用AI生成内容
-        markdown_content = self._call_ai(
+        text_content = self._call_ai(
             system_prompt=account_data["system_prompt"],
             user_prompt=user_prompt,
             style_reference=account_data["style_reference"]
         )
         
-        # 转换为HTML
-        html_content = self._markdown_to_html(markdown_content)
-        
-        # 保存输出
-        output_path = account_path / "output.html"
+        # 保存输出为纯文本
+        output_path = account_path / "output.txt"
         with open(output_path, 'w', encoding='utf-8') as f:
-            f.write(html_content)
+            f.write(text_content)
         
         print(f"✅ [{account_config['account_name']}] 内容已生成: {output_path}")
         
@@ -146,7 +156,7 @@ class ContentGenerator:
             topics_str = "、".join(topics)
             prompt = f"请从以下主题中选择一个写一篇文章：{topics_str}。字数控制在{target_words}字左右。"
         
-        prompt += "\n\n请输出为Markdown格式，包含标题、小标题、正文等完整结构。"
+        prompt += "\n\n【严格格式要求】\n1. 必须输出纯文本，严禁使用任何Markdown语法（如#、**、---、```等）。\n2. 第一行必须是文章标题。\n3. 第二行必须是空行。\n4. 第三行开始这一直到最后是正文。\n5. 不要输出“好的”、“以下是文章”等任何对话内容，直接开始输出标题。\n6. 使用空行分段，可以使用emoji（如🌟、📌）和序号（如1.、2.）增强可读性。"
         
         return prompt
     
@@ -185,31 +195,22 @@ class ContentGenerator:
             )
             return response.text
         
+        elif provider == "zhipu":
+            model = self.config["api_config"]["zhipu"].get("model", "glm-4-flash")
+            response = self.ai_client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": full_system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=gen_settings.get("temperature", 0.7),
+                max_tokens=gen_settings.get("max_tokens", 2000)
+            )
+            return response.choices[0].message.content
+        
         else:
             raise ValueError(f"Unsupported AI provider: {provider}")
     
-    def _markdown_to_html(self, markdown_content: str) -> str:
-        """将Markdown转换为纯净的HTML（无样式）"""
-        # 使用markdown库转换，支持代码高亮、表格等扩展
-        html_body = markdown.markdown(
-            markdown_content,
-            extensions=['fenced_code', 'tables', 'nl2br', 'sane_lists']
-        )
-        
-        # 组装完整的HTML文档（不包含CSS样式）
-        html_template = f"""<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WeChat Article</title>
-</head>
-<body>
-{html_body}
-</body>
-</html>"""
-        
-        return html_template
     
     def generate_all(self, topic: Optional[str] = None):
         """为所有启用的账号生成内容"""

@@ -1,0 +1,98 @@
+【第 4 章 - 场景分类提示词大全】
+4.6 创意设计与多模态：用文字画画与导演大片
+
+在很长一段时间里，我们认为创意是人类最后的堡垒。
+直到 Midjourney 画出了《太空歌剧院》，Sora 生成了逼真的东京街景。
+在这个多模态时代，**想象力（Imagination）+ 描述力（Description）= 生产力**。
+
+无论你是否会画画、是否懂摄影，只要掌握了下面的 Prompt 公式，你就是创意总监。
+
+---
+
+场景一：Midjourney/Stable Diffusion 绘图通用公式
+（适用于：生成海报、插画、头像、logo）
+
+**【痛点】** 心里想的是梵高星空，画出来的是幼儿园涂鸦。
+**【原理】** 摄影/美术领域的专业术语堆叠。
+
+**Prompt 模板（万能公式）：**
+> **[Subject 主体]** + **[Art Style 艺术风格]** + **[Lighting & Color 灯光色彩]** + **[Composition 构图视角]** + **[Parameters 参数]**
+
+**1. 主体 (Subject)**
+越具体越好。
+❌ 错误：一只猫。
+✅ 正确：一只穿着宇航服的英国短毛猫，漂浮在国际空间站里，透过舷窗看地球。
+
+**2. 艺术风格 (Art Style)**
+决定了画面的“流派”。
+-   **写实派**：Photorealistic, 8k resolution, Unreal Engine 5 render, National Geographic photo.
+-   **二次元**：Anime style, Studio Ghibli style, Makoto Shinkai style (新海诚风).
+-   **艺术派**：Oil painting by Van Gogh, Cyberpunk, Steampunk, Vaporwave, Bauhaus style.
+
+**3. 灯光与色彩 (Lighting & Color)**
+-   **光**：Cinematic lighting (电影光), Soft lighting (柔光), Neon lights (霓虹), Golden hour (黄金时刻).
+-   **色**：Pastel color palette (莫兰迪色), High contrast (高对比度), Black and white.
+
+**4. 构图 (Composition)**
+-   Wide angle (广角), Macro shot (微距), Isometric view (等轴视图/2.5D), Close-up (特写).
+
+**5. 参数 (Midjourney 专用)**
+-   `--ar 16:9` (宽屏)
+-   `--niji 6` (二次元模式)
+-   `--s 750` (风格化程度高)
+
+**📌 实战案例：生成一张赛博朋克风格的女孩海报**
+> **Prompt:** A futuristic cybergirl standing in rainy neon Tokyo streets, wearing a transparent plastic raincoat, glowing headphones, Cyberpunk 2077 style, cinematic lighting, neon blue and pink color palette, shallow depth of field, ultra-detailed, 8k, --ar 3:4
+
+---
+
+场景二：Logo 设计
+（适用于：个人品牌、创业公司）
+
+**Prompt 模板：**
+> **[App/品牌名称]**, **[核心元素]**, logo design, minimal line art (极简线条), vector graphics (矢量图), flat design (扁平化), white background.
+
+**📌 实战案例：做一个咖啡店 Logo**
+> **Prompt:** A minimal logo for a coffee shop named "Moon Coffee", combining a coffee bean and a crescent moon, simple line art, elegant, sophisticated, black on white background.
+
+---
+
+场景三：视频生成脚本 (Sora/Runway/Pika)
+（适用于：短视频制作、概念片）
+
+**【原理】** 视频也是由画面组成的，但多了“运动”描述。
+**【公式】** **[画面描述]** + **[Camera Movement 运镜]** + **[Action 动作]**
+
+**1. 常用运镜词**
+-   **Pan right/left**：镜头左右摇。
+-   **Zoom in/out**：推拉镜头。
+-   **Drone shot**：无人机航拍。
+-   **Tracking shot**：跟拍。
+
+**📌 实战案例：生成一个史诗级的风景视频**
+> **Prompt:** Drone shot of a majestic waterfall in Iceland, flying over the edge of the cliff, water crashing into the rocks below, rainbows forming in the mist, 4k resolution, highly detailed, slow motion.
+
+---
+
+场景四：审美引导 (Aesthetic Critique)
+（适用于：设计师找灵感、普通人提升审美）
+
+**【痛点】** 觉得某张图好看，但说不出为什么，想让 AI 分析并生成类似的。
+**【原理】** 反向推导（Image-to-Text）。
+
+**Prompt 模板：**
+> **Task:** 请充当一位资深艺术评论家。
+> **Input:** [上传图片]
+> **Question:**
+> 1. 请分析这张图片的构图、配色和光影特点。
+> 2. 如果我想用 AI 生成类似的图片，应该用什么提示词？请写给我。
+
+---
+
+**本章小结：**
+在多模态领域，**语言的贫乏限制了想象力的边界**。
+如果你不知道什么是“赛博朋克”，什么是“丁达尔光”，你就无法指挥 AI 画出那种感觉。
+所以，最好的 AI 绘画教程，其实是美术史和摄影教材。
+多看看好的设计，学会用专业的词汇去描述它，AI 就会成为你手中的神笔马良。
+
+下一节，我们将回归生活，去探索如何用 AI 解决更复杂的“人生难题”，比如深度旅行规划和情绪疗愈。

@@ -1,0 +1,138 @@
+【附录 B - 常用指令修饰词库】
+
+这是一个"调味料库"。
+同样一句话，换个形容词，AI 的输出可能完全不同。
+这个附录收录了最常用、最有效的修饰词。
+当你不知道怎么描述你想要的风格时，来这里找找灵感。
+
+一、 语气与风格类
+
+正式程度：
+非常正式：academic（学术的）、formal（正式的）、professional（专业的）、diplomatic（外交的）
+中等正式：business-like（商务的）、polite（礼貌的）、respectful（尊重的）
+轻松随意：casual（随意的）、friendly（友好的）、conversational（对话式的）、laid-back（轻松的）
+非常随意：informal（非正式的）、chatty（闲聊的）、colloquial（口语的）
+
+情感色彩：
+积极：enthusiastic（热情的）、optimistic（乐观的）、encouraging（鼓励的）、uplifting（振奋的）
+中性：objective（客观的）、neutral（中立的）、balanced（平衡的）、factual（事实性的）
+消极：critical（批判的）、skeptical（怀疑的）、cautious（谨慎的）、pessimistic（悲观的）
+
+幽默程度：
+严肃：serious（严肃的）、solemn（庄重的）、grave（严肃的）
+轻松：light-hearted（轻松的）、playful（俏皮的）、witty（机智的）
+搞笑：humorous（幽默的）、funny（好笑的）、satirical（讽刺的）、sarcastic（挖苦的）
+
+二、 内容密度类
+
+详细程度：
+极简：concise（简洁的）、brief（简短的）、to-the-point（直奔主题的）、minimalist（极简的）
+适中：balanced（平衡的）、moderate（适度的）、comprehensive（全面的）
+详尽：detailed（详细的）、in-depth（深入的）、exhaustive（详尽的）、thorough（彻底的）
+
+复杂程度：
+简单：simple（简单的）、easy-to-understand（易懂的）、beginner-friendly（新手友好的）
+适中：intermediate（中级的）、accessible（可理解的）
+复杂：advanced（高级的）、technical（技术性的）、sophisticated（复杂精妙的）
+
+三、 创意与逻辑类
+
+创意程度：
+保守：conventional（传统的）、standard（标准的）、orthodox（正统的）
+适中：creative（有创意的）、innovative（创新的）、fresh（新鲜的）
+大胆：unconventional（非传统的）、bold（大胆的）、avant-garde（前卫的）、experimental（实验性的）
+
+逻辑严谨度：
+松散：free-flowing（自由流动的）、stream-of-consciousness（意识流的）
+适中：structured（结构化的）、organized（有组织的）
+严谨：rigorous（严谨的）、systematic（系统的）、methodical（有条理的）、logical（逻辑的）
+
+四、 受众定位类
+
+年龄层：
+儿童：kid-friendly（儿童友好的）、simple（简单的）、fun（有趣的）
+青少年：teen-oriented（面向青少年的）、trendy（时髦的）、relatable（有共鸣的）
+成年人：mature（成熟的）、sophisticated（精致的）、professional（专业的）
+老年人：senior-friendly（老年友好的）、patient（耐心的）、clear（清晰的）
+
+专业程度：
+外行：layman-friendly（外行友好的）、jargon-free（无术语的）、accessible（易理解的）
+半专业：semi-technical（半技术性的）、informed（知情的）
+专业：expert-level（专家级的）、technical（技术性的）、specialized（专业化的）
+
+五、 文体风格类
+
+叙事风格：
+新闻：journalistic（新闻式的）、factual（事实性的）、objective（客观的）
+故事：narrative（叙事的）、story-like（故事性的）、engaging（引人入胜的）
+说明：expository（说明性的）、instructive（指导性的）、educational（教育性的）
+议论：argumentative（论证的）、persuasive（说服性的）、analytical（分析性的）
+
+修辞手法：
+直白：straightforward（直白的）、plain（朴素的）、literal（字面的）
+修辞：rhetorical（修辞的）、figurative（比喻的）、poetic（诗意的）、metaphorical（隐喻的）
+
+六、 行业特定类
+
+营销文案：
+销售导向：sales-oriented（销售导向的）、persuasive（说服性的）、compelling（引人注目的）
+品牌导向：brand-focused（品牌聚焦的）、storytelling（讲故事的）、emotional（情感的）
+
+技术文档：
+用户手册：user-friendly（用户友好的）、step-by-step（分步的）、illustrated（图解的）
+API 文档：technical（技术的）、precise（精确的）、comprehensive（全面的）
+
+学术论文：
+理论：theoretical（理论的）、abstract（抽象的）、conceptual（概念的）
+实证：empirical（实证的）、data-driven（数据驱动的）、evidence-based（基于证据的）
+
+七、 使用技巧
+
+技巧一：叠加使用
+不要只用一个形容词，可以叠加 2-3 个。
+例如："请用 professional yet friendly 的语气写一封邮件。"
+（专业但友好）
+
+技巧二：对比使用
+用"不要 X，要 Y"的句式。
+例如："不要 academic，要 conversational。"
+（不要学术腔，要对话感）
+
+技巧三：参照使用
+直接说"像 XX 一样"。
+例如："请用像《纽约时报》一样的风格写新闻。"
+（参照知名媒体）
+
+技巧四：反向使用
+告诉 AI 不要什么。
+例如："不要使用 jargon（术语），不要 verbose（啰嗦）。"
+（设定红线）
+
+八、 常见组合推荐
+
+组合一：商务邮件
+professional + polite + concise + action-oriented
+（专业 + 礼貌 + 简洁 + 行动导向）
+
+组合二：小红书文案
+casual + enthusiastic + relatable + emoji-rich
+（随意 + 热情 + 有共鸣 + 多表情）
+
+组合三：技术文档
+technical + precise + structured + beginner-friendly
+（技术性 + 精确 + 结构化 + 新手友好）
+
+组合四：演讲稿
+engaging + persuasive + story-driven + inspiring
+（引人入胜 + 说服性 + 故事驱动 + 鼓舞人心）
+
+组合五：学术论文
+rigorous + evidence-based + objective + formal
+（严谨 + 基于证据 + 客观 + 正式）
+
+使用建议：
+这个词库不是让你死记硬背的。
+而是让你在"词穷"的时候，有个地方可以找灵感。
+慢慢地，你会形成自己的"常用词库"。
+那时候，你就不需要这个附录了。
+因为你已经内化了这些词汇，它们会自然地出现在你的提示词里。

@@ -2,7 +2,7 @@
 matrix_config.json
 
 # Generated Content
-accounts/*/output.html
+# accounts/*/output.txt
 
 # Python
 __pycache__/

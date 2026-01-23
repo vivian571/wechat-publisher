@@ -1,0 +1,33 @@
+{
+  "ISLAND_CORE": {
+    "name": "南序岛指挥中心",
+    "owner": "以安",
+    "version": "2026.1",
+    "root_path": "./"
+  },
+  "MODULES": {
+    "wechat_matrix": {
+      "path": "./My_Wechat_Matrix",
+      "entry_script": "daily_auto_publish.py"
+    },
+    "temp_engine": {
+      "path": "./temp",
+      "config_file": "config.ini"
+    },
+    "omni_publish": {
+      "path": "./OmniPublish",
+      "platforms": [
+        "dev.to",
+        "hashnode"
+      ]
+    },
+    "content_library": {
+      "novel_path": "./小说",
+      "course_path": "./编程语法必修"
+    }
+  },
+  "JIUJIU_MONITOR": {
+    "status": "active",
+    "guardian": "九九 (The Gentleman Cat)"
+  }
+}

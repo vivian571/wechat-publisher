@@ -1,0 +1,312 @@
+第2章 循环思维：打造「财富复利循环」
+2.1 单利 vs 复利：用for循环模拟利息增长模型
+
+你有没有想过，为什么有些人工作10年还在月光，而有些人5年就实现了财务自由？
+答案不在于他们赚得多，而在于他们懂得"让钱生钱"。
+
+今天，我们就用程序员最熟悉的for循环，来揭开复利的神秘面纱。
+看完这一节，你会发现：复利不是玄学，而是一个可以用代码模拟的数学模型。
+
+一、单利：最傻的赚钱方式
+
+什么是单利？
+简单说，就是只有本金产生利息，利息不再产生利息。
+
+举个例子：
+你有10万块，存银行定期，年利率3%。
+第一年利息：10万 × 3% = 3000元
+第二年利息：10万 × 3% = 3000元
+第三年利息：10万 × 3% = 3000元
+……
+
+看到了吗？每年的利息都是3000元，不会增长。
+10年后，你的总资产 = 10万 + 3000 × 10 = 13万。
+
+用Python代码表示：
+
+```python
+def simple_interest(principal, rate, years):
+    """计算单利"""
+    interest_per_year = principal * rate
+    total_interest = interest_per_year * years
+    total = principal + total_interest
+    return total
+
+# 示例：10万本金，3%年利率，10年
+result = simple_interest(100000, 0.03, 10)
+print(f"10年后总资产：{result:,.2f}元")  # 130,000.00元
+```
+
+单利的问题在哪？
+问题在于：你每年赚的3000元利息，如果不拿出来花掉，就躺在账户里睡大觉。
+这3000元本来可以继续生钱，但在单利模式下，它们被浪费了。
+
+这就像你写了一个for循环，但每次循环都不保存上一次的结果。
+效率太低了。
+
+二、复利：让钱自己生钱
+
+什么是复利？
+简单说，就是利息也能产生利息。
+
+还是同样的例子：
+你有10万块，投资基金，年化收益率10%（复利）。
+
+第一年：10万 × (1 + 10%) = 11万
+第二年：11万 × (1 + 10%) = 12.1万
+第三年：12.1万 × (1 + 10%) = 13.31万
+……
+
+看到区别了吗？
+每年的本金都在增长，因为上一年的利息被加到了本金里。
+
+10年后，你的总资产 = 10万 × (1 + 10%)^10 = 25.94万。
+
+对比一下：
+- 单利10年：13万
+- 复利10年：25.94万
+
+差了将近一倍！
+
+用Python代码表示：
+
+```python
+def compound_interest(principal, rate, years):
+    """计算复利"""
+    total = principal * (1 + rate) ** years
+    return total
+
+# 示例：10万本金，10%年化收益率，10年
+result = compound_interest(100000, 0.10, 10)
+print(f"10年后总资产：{result:,.2f}元")  # 259,374.25元
+```
+
+这就是复利的威力。
+爱因斯坦说："复利是世界第八大奇迹。"
+巴菲特说："人生就像滚雪球，重要的是找到很湿的雪和很长的坡。"
+
+"很湿的雪"就是高收益率，"很长的坡"就是时间。
+
+三、用for循环模拟复利增长
+
+为了更直观地理解复利，我们用for循环来模拟整个过程。
+
+```python
+def simulate_compound_growth(principal, rate, years):
+    """用for循环模拟复利增长过程"""
+    
+    print(f"初始本金：{principal:,.2f}元")
+    print(f"年化收益率：{rate * 100}%")
+    print(f"投资年限：{years}年")
+    print("-" * 50)
+    
+    current_amount = principal
+    
+    for year in range(1, years + 1):
+        # 计算本年度收益
+        interest = current_amount * rate
+        # 更新总金额（本金 + 利息）
+        current_amount += interest
+        
+        print(f"第{year:2d}年：本金 {current_amount:>12,.2f}元，本年收益 {interest:>10,.2f}元")
+    
+    total_profit = current_amount - principal
+    print("-" * 50)
+    print(f"最终资产：{current_amount:,.2f}元")
+    print(f"总收益：{total_profit:,.2f}元")
+    print(f"收益率：{(total_profit / principal) * 100:.2f}%")
+
+# 运行模拟
+simulate_compound_growth(100000, 0.10, 10)
+```
+
+运行结果：
+
+```
+初始本金：100,000.00元
+年化收益率：10.0%
+投资年限：10年
+--------------------------------------------------
+第 1年：本金   110,000.00元，本年收益  10,000.00元
+第 2年：本金   121,000.00元，本年收益  11,000.00元
+第 3年：本金   133,100.00元，本年收益  12,100.00元
+第 4年：本金   146,410.00元，本年收益  13,310.00元
+第 5年：本金   161,051.00元，本年收益  14,641.00元
+第 6年：本金   177,156.10元，本年收益  16,105.10元
+第 7年：本金   194,871.71元，本年收益  17,715.61元
+第 8年：本金   214,358.88元，本年收益  19,487.17元
+第 9年：本金   235,794.77元，本年收益  21,435.89元
+第10年：本金   259,374.25元，本年收益  23,579.48元
+--------------------------------------------------
+最终资产：259,374.25元
+总收益：159,374.25元
+收益率：159.37%
+```
+
+看到了吗？
+第1年的收益是1万，第10年的收益是2.36万。
+收益在加速增长！
+
+这就是复利的魔力。
+
+四、可视化分析：单利 vs 复利
+
+光看数字还不够直观，我们用matplotlib画个图。
+
+```python
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
+matplotlib.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+
+def compare_interest_growth(principal, simple_rate, compound_rate, years):
+    """对比单利和复利的增长曲线"""
+    
+    # 计算单利增长
+    simple_values = []
+    for year in range(years + 1):
+        value = principal + (principal * simple_rate * year)
+        simple_values.append(value)
+    
+    # 计算复利增长
+    compound_values = []
+    for year in range(years + 1):
+        value = principal * (1 + compound_rate) ** year
+        compound_values.append(value)
+    
+    # 绘图
+    years_list = list(range(years + 1))
+    
+    plt.figure(figsize=(12, 6))
+    plt.plot(years_list, simple_values, label=f'单利 {simple_rate*100}%', marker='o')
+    plt.plot(years_list, compound_values, label=f'复利 {compound_rate*100}%', marker='s')
+    
+    plt.xlabel('年份')
+    plt.ylabel('资产总额（元）')
+    plt.title(f'单利 vs 复利增长对比（本金{principal:,.0f}元）')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    
+    # 添加数值标签
+    for i in [0, years//2, years]:
+        plt.text(i, simple_values[i], f'{simple_values[i]:,.0f}', ha='center', va='bottom')
+        plt.text(i, compound_values[i], f'{compound_values[i]:,.0f}', ha='center', va='bottom')
+    
+    plt.tight_layout()
+    plt.savefig('单利vs复利对比.png', dpi=300)
+    plt.show()
+
+# 运行对比
+compare_interest_growth(100000, 0.03, 0.10, 30)
+```
+
+这个图会清楚地展示：
+- 前几年，单利和复利差距不大
+- 10年后，复利开始明显超越单利
+- 20年后，复利是单利的好几倍
+- 30年后，差距达到天文数字
+
+五、实战案例：定投基金的复利效应
+
+光有本金还不够，大部分人都是边工作边存钱。
+这时候，我们需要考虑"定期投入"的复利效应。
+
+假设你每个月定投1000元到指数基金，年化收益率10%。
+10年后会有多少钱？
+
+```python
+def monthly_investment_compound(monthly_amount, annual_rate, years):
+    """计算每月定投的复利增长"""
+    
+    monthly_rate = annual_rate / 12  # 月化收益率
+    months = years * 12  # 总月数
+    
+    total = 0
+    for month in range(1, months + 1):
+        # 每个月投入的钱，会按剩余月数计算复利
+        remaining_months = months - month + 1
+        future_value = monthly_amount * (1 + monthly_rate) ** remaining_months
+        total += future_value
+    
+    total_investment = monthly_amount * months
+    total_profit = total - total_investment
+    
+    print(f"每月投入：{monthly_amount:,.2f}元")
+    print(f"投资年限：{years}年")
+    print(f"年化收益率：{annual_rate * 100}%")
+    print("-" * 50)
+    print(f"累计投入：{total_investment:,.2f}元")
+    print(f"最终资产：{total:,.2f}元")
+    print(f"总收益：{total_profit:,.2f}元")
+    print(f"收益率：{(total_profit / total_investment) * 100:.2f}%")
+
+# 示例：每月定投1000元，年化10%，10年
+monthly_investment_compound(1000, 0.10, 10)
+```
+
+运行结果：
+
+```
+每月投入：1,000.00元
+投资年限：10年
+年化收益率：10.0%
+--------------------------------------------------
+累计投入：120,000.00元
+最终资产：206,757.98元
+总收益：86,757.98元
+收益率：72.30%
+```
+
+看到了吗？
+你只投入了12万，但最终拿到了20.68万。
+多出来的8.68万，就是复利的贡献。
+
+六、避坑指南：复利的5个常见误区
+
+误区1：以为复利是稳赚不赔
+复利的前提是"正收益"。
+如果你的投资亏损，复利会加速你的亏损。
+比如，亏损10%，复利10年，你的本金会缩水到原来的35%。
+
+误区2：忽视通货膨胀
+名义收益率10%，但通胀率3%，实际收益率只有7%。
+一定要用"实际收益率"来计算复利。
+
+误区3：频繁交易，打断复利
+很多人看股票涨了就卖，跌了就买。
+结果手续费交了一大堆，复利效应被打断了。
+长期持有，才能享受复利。
+
+误区4：追求过高的收益率
+年化30%的收益率听起来很诱人，但风险极高。
+稳定的10-15%，比不稳定的30%更靠谱。
+
+误区5：等有钱了再投资
+很多人说："等我有10万了再投资。"
+结果10年过去了，还是没攒到10万。
+其实，哪怕每个月只有500块，也应该开始定投。
+时间才是复利最重要的因素。
+
+七、本节小结
+
+复利不是玄学，而是一个可以用for循环模拟的数学模型。
+
+核心公式：
+- 单利：本金 × (1 + 利率 × 年数)
+- 复利：本金 × (1 + 利率)^年数
+
+复利的三大要素：
+1. 本金：越多越好
+2. 收益率：越高越好（但要稳定）
+3. 时间：越长越好
+
+实战建议：
+1. 尽早开始投资，哪怕本金很少
+2. 选择稳定的投资标的（如指数基金）
+3. 长期持有，不要频繁交易
+4. 定期定投，利用复利效应
+5. 控制风险，避免大幅亏损
+
+记住：复利是世界第八大奇迹，但只有理解它、尊重它、利用它的人，才能享受它的馈赠。
+
+下一节，我们将学习如何跳出"死循环"，识别并摆脱低效劳动。

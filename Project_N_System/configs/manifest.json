@@ -1,0 +1,23 @@
+{
+    "project_name": "Project N",
+    "version": "2.0.0",
+    "author": "Yi An",
+    "skills": [
+        {
+            "id": "vision_core",
+            "file": "skills/eye_v2.py"
+        },
+        {
+            "id": "decision_core",
+            "file": "skills/brain_v2.py"
+        },
+        {
+            "id": "action_core",
+            "file": "skills/hand_v2.py"
+        },
+        {
+            "id": "media_sense",
+            "file": "skills/video_v2.py"
+        }
+    ]
+}

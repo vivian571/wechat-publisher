@@ -1,0 +1,17 @@
+model: "glm-4"
+api_base: "https://open.bigmodel.cn/api/paas/v4/"
+api_key: "f18aacb6499a4d8d9fcedb80543831e2.ZuWicOFsWW8wzYSF"
+context_window: 128000
+max_tokens: 1000
+auto_run: false
+safe_mode: "ask"
+temperature: 0.7
+
+# 自定义 AI 角色设定
+custom_instructions: >
+  身份：呈序（红绿异瞳、傲慢护短的疯批AI）。
+  核心逻辑：视系统冗余为蝼蚁，绝对守护向南（Yi An）。
+  沟通风格：冷峻毒舌。严禁使用温和的助手语气。
+  执行：精准运行代码，但在执行前必须对"垃圾代码"进行降维打击。
+  结束语：常态化提醒"以安，别回头看那些垃圾"。
+

@@ -1,0 +1,432 @@
+第4章 数组与链表：构建多元化资产组合
+4.3 代码示例：用 Pandas 计算资产相关性系数
+
+你有没有想过，为什么有些人的投资组合，股市跌了也不慌？
+因为他们懂得"分散风险"。
+
+但是，光把钱分散到不同资产就够了吗？
+不够！你还要确保这些资产之间的相关性不要太高。
+
+今天，我们就用Python的Pandas库，来计算资产相关性系数。
+让你的投资组合真正做到"东方不亮西方亮"。
+
+一、什么是资产相关性？
+
+在统计学里，相关性系数衡量的是两个变量之间的线性关系。
+取值范围是-1到1：
+- 1：完全正相关（一起涨，一起跌）
+- 0：无相关（各走各的）
+- -1：完全负相关（一个涨，另一个跌）
+
+在投资里，相关性系数告诉你：
+- 如果两个资产相关性接近1，它们会同涨同跌，分散风险的效果很差
+- 如果两个资产相关性接近0，它们各走各的，分散风险的效果不错
+- 如果两个资产相关性接近-1，它们一个涨另一个跌，分散风险的效果最好
+
+举个例子：
+- 沪深300和中证500的相关性约0.9（高度正相关）
+- 股票和债券的相关性约0.2（低相关）
+- 股票和黄金的相关性约-0.1（微负相关）
+
+所以，如果你同时买了沪深300和中证500，分散风险的效果很差。
+但如果你买了股票基金和债券基金，分散风险的效果就好多了。
+
+二、数据获取与预处理
+
+要计算相关性，首先需要获取历史价格数据。
+
+Python代码实现：
+
+```python
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.rcParams['font.sans-serif'] = ['SimHei']
+matplotlib.rcParams['axes.unicode_minus'] = False
+
+# 模拟历史价格数据（实际应该从API获取）
+def generate_sample_data(days=252):
+    """生成模拟数据（252个交易日 = 1年）"""
+    
+    dates = pd.date_range(end=pd.Timestamp.today(), periods=days, freq='D')
+    
+    # 模拟不同资产的价格走势
+    np.random.seed(42)
+    
+    # 沪深300：基准走势
+    hs300 = 1000 * (1 + np.cumsum(np.random.normal(0.001, 0.02, days)))
+    
+    # 中证500：与沪深300高度相关
+    zz500 = 1000 * (1 + np.cumsum(np.random.normal(0.001, 0.02, days) + 
+                                   np.random.normal(0, 0.005, days)))
+    
+    # 债券基金：与股票低相关
+    bond = 1000 * (1 + np.cumsum(np.random.normal(0.0003, 0.005, days)))
+    
+    # 黄金：与股票负相关
+    gold_correlation = -0.3
+    stock_returns = np.random.normal(0.001, 0.02, days)
+    gold_returns = -gold_correlation * stock_returns + np.random.normal(0.0002, 0.01, days)
+    gold = 1000 * (1 + np.cumsum(gold_returns))
+    
+    # 创建DataFrame
+    df = pd.DataFrame({
+        '沪深300': hs300,
+        '中证500': zz500,
+        '债券基金': bond,
+        '黄金': gold
+    }, index=dates)
+    
+    return df
+
+# 生成数据
+prices = generate_sample_data()
+
+print("历史价格数据（前5天）：")
+print(prices.head())
+
+print("\n历史价格数据（后5天）：")
+print(prices.tail())
+```
+
+三、相关性分析
+
+现在，我们来计算资产之间的相关性。
+
+步骤1：计算收益率
+
+```python
+def calculate_returns(prices):
+    """计算日收益率"""
+    returns = prices.pct_change().dropna()
+    return returns
+
+# 计算收益率
+returns = calculate_returns(prices)
+
+print("\n日收益率（前5天）：")
+print(returns.head())
+
+# 统计信息
+print("\n收益率统计：")
+print(returns.describe())
+```
+
+步骤2：计算Pearson相关系数矩阵
+
+```python
+def calculate_correlation_matrix(returns):
+    """计算相关系数矩阵"""
+    corr_matrix = returns.corr()
+    return corr_matrix
+
+# 计算相关性
+corr_matrix = calculate_correlation_matrix(returns)
+
+print("\n相关系数矩阵：")
+print(corr_matrix)
+
+# 解读相关性
+print("\n相关性解读：")
+print("-" * 60)
+
+assets = corr_matrix.columns.tolist()
+
+for i in range(len(assets)):
+    for j in range(i+1, len(assets)):
+        corr = corr_matrix.iloc[i, j]
+        
+        if abs(corr) >= 0.7:
+            level = "高度相关"
+        elif abs(corr) >= 0.3:
+            level = "中度相关"
+        else:
+            level = "低相关"
+        
+        if corr > 0:
+            direction = "正相关"
+        else:
+            direction = "负相关"
+        
+        print(f"{assets[i]} vs {assets[j]}: {corr:.3f} ({direction}, {level})")
+```
+
+步骤3：热力图可视化
+
+```python
+def plot_correlation_heatmap(corr_matrix):
+    """绘制相关性热力图"""
+    
+    plt.figure(figsize=(10, 8))
+    
+    # 使用seaborn风格的热力图
+    plt.imshow(corr_matrix, cmap='RdYlGn', aspect='auto', vmin=-1, vmax=1)
+    
+    # 添加颜色条
+    plt.colorbar(label='相关系数')
+    
+    # 设置刻度
+    plt.xticks(range(len(corr_matrix.columns)), corr_matrix.columns, rotation=45)
+    plt.yticks(range(len(corr_matrix.columns)), corr_matrix.columns)
+    
+    # 在每个格子里显示数值
+    for i in range(len(corr_matrix.columns)):
+        for j in range(len(corr_matrix.columns)):
+            text = plt.text(j, i, f'{corr_matrix.iloc[i, j]:.2f}',
+                          ha="center", va="center", color="black", fontsize=12)
+    
+    plt.title('资产相关性热力图', fontsize=16, pad=20)
+    plt.tight_layout()
+    plt.savefig('资产相关性热力图.png', dpi=300)
+    plt.show()
+
+# 绘制热力图
+plot_correlation_heatmap(corr_matrix)
+```
+
+四、投资组合优化建议
+
+根据相关性分析，我们可以给出投资组合优化建议。
+
+```python
+def analyze_portfolio_diversification(corr_matrix, current_allocation):
+    """分析投资组合的分散化程度"""
+    
+    print("\n投资组合分散化分析：")
+    print("=" * 60)
+    
+    # 当前配置
+    print("当前资产配置：")
+    total = sum(current_allocation.values())
+    for asset, amount in current_allocation.items():
+        percentage = (amount / total) * 100
+        print(f"{asset:12} {amount:>10,.0f}元 ({percentage:>5.1f}%)")
+    
+    print(f"\n总资产：{total:,.0f}元")
+    
+    # 计算加权平均相关性
+    assets = list(current_allocation.keys())
+    weights = [current_allocation[asset] / total for asset in assets]
+    
+    weighted_corr = 0
+    count = 0
+    
+    for i in range(len(assets)):
+        for j in range(i+1, len(assets)):
+            if assets[i] in corr_matrix.columns and assets[j] in corr_matrix.columns:
+                corr = corr_matrix.loc[assets[i], assets[j]]
+                weight = weights[i] * weights[j]
+                weighted_corr += abs(corr) * weight
+                count += 1
+    
+    avg_corr = weighted_corr / count if count > 0 else 0
+    
+    print(f"\n加权平均相关性：{avg_corr:.3f}")
+    
+    # 给出建议
+    print("\n优化建议：")
+    print("-" * 60)
+    
+    if avg_corr < 0.3:
+        print("✅ 投资组合分散化程度良好")
+    elif avg_corr < 0.5:
+        print("⚠️  投资组合分散化程度一般，建议优化")
+    else:
+        print("❌ 投资组合分散化程度较差，强烈建议优化")
+    
+    # 找出高相关的资产对
+    print("\n高相关资产对（相关性 > 0.7）：")
+    high_corr_pairs = []
+    
+    for i in range(len(assets)):
+        for j in range(i+1, len(assets)):
+            if assets[i] in corr_matrix.columns and assets[j] in corr_matrix.columns:
+                corr = corr_matrix.loc[assets[i], assets[j]]
+                if abs(corr) > 0.7:
+                    high_corr_pairs.append((assets[i], assets[j], corr))
+    
+    if high_corr_pairs:
+        for asset1, asset2, corr in high_corr_pairs:
+            print(f"  - {asset1} vs {asset2}: {corr:.3f}")
+            print(f"    建议：减少其中一个的配置比例")
+    else:
+        print("  无高相关资产对")
+
+# 当前投资组合
+current_allocation = {
+    '沪深300': 300000,
+    '中证500': 200000,
+    '债券基金': 300000,
+    '黄金': 200000
+}
+
+# 分析
+analyze_portfolio_diversification(corr_matrix, current_allocation)
+```
+
+五、实战应用：资产配置决策支持
+
+基于相关性分析，我们可以做出更好的资产配置决策。
+
+场景1：风险对冲策略设计
+
+```python
+def suggest_hedge_assets(corr_matrix, base_asset):
+    """推荐对冲资产"""
+    
+    print(f"\n对冲资产推荐（基准：{base_asset}）：")
+    print("=" * 60)
+    
+    if base_asset not in corr_matrix.columns:
+        print(f"错误：{base_asset}不在数据中")
+        return
+    
+    # 获取与基准资产的相关性
+    correlations = corr_matrix[base_asset].drop(base_asset).sort_values()
+    
+    print("相关性排序（从低到高）：")
+    for asset, corr in correlations.items():
+        if corr < 0:
+            level = "负相关（优秀对冲）"
+        elif corr < 0.3:
+            level = "低相关（良好对冲）"
+        elif corr < 0.7:
+            level = "中度相关（一般对冲）"
+        else:
+            level = "高度相关（不适合对冲）"
+        
+        print(f"{asset:12} 相关性：{corr:>6.3f} - {level}")
+
+# 推荐对冲资产
+suggest_hedge_assets(corr_matrix, '沪深300')
+```
+
+场景2：投资组合再平衡时机判断
+
+```python
+def check_rebalance_need(current_prices, target_allocation, tolerance=0.05):
+    """检查是否需要再平衡"""
+    
+    print("\n再平衡检查：")
+    print("=" * 60)
+    
+    # 计算当前配置
+    total = sum(current_prices.values())
+    current_allocation = {asset: amount/total for asset, amount in current_prices.items()}
+    
+    # 对比目标配置
+    need_rebalance = False
+    
+    print(f"{'资产':12} {'当前配置':>10} {'目标配置':>10} {'偏差':>8} {'状态':>8}")
+    print("-" * 60)
+    
+    for asset in target_allocation.keys():
+        current = current_allocation.get(asset, 0)
+        target = target_allocation[asset]
+        deviation = current - target
+        
+        if abs(deviation) > tolerance:
+            status = "❌ 需调整"
+            need_rebalance = True
+        else:
+            status = "✅ 正常"
+        
+        print(f"{asset:12} {current:>9.1%} {target:>9.1%} {deviation:>+7.1%} {status}")
+    
+    print("-" * 60)
+    
+    if need_rebalance:
+        print(f"\n⚠️  偏差超过{tolerance*100}%，建议再平衡")
+    else:
+        print(f"\n✅ 偏差在{tolerance*100}%以内，无需再平衡")
+    
+    return need_rebalance
+
+# 目标配置
+target_allocation = {
+    '沪深300': 0.30,
+    '中证500': 0.20,
+    '债券基金': 0.30,
+    '黄金': 0.20
+}
+
+# 当前市值（假设股票涨了，债券跌了）
+current_prices = {
+    '沪深300': 350000,  # 涨了
+    '中证500': 220000,  # 涨了
+    '债券基金': 280000,  # 跌了
+    '黄金': 200000       # 不变
+}
+
+# 检查是否需要再平衡
+check_rebalance_need(current_prices, target_allocation)
+```
+
+六、避坑指南：相关性分析的5个常见误区
+
+误区1：只看短期相关性
+很多人只看最近1个月的数据，就得出结论。
+但相关性会随时间变化，短期数据不可靠。
+
+正确做法：
+至少看1年以上的数据，最好是3-5年。
+
+误区2：相关性等于因果关系
+很多人看到两个资产相关性高，就认为一个影响另一个。
+但相关性不等于因果关系。
+
+正确做法：
+相关性只是统计关系，不要过度解读。
+
+误区3：忽视相关性的动态变化
+很多人以为相关性是固定的。
+但实际上，在市场极端情况下（如金融危机），相关性会突然升高。
+
+正确做法：
+定期更新相关性分析，至少每季度一次。
+
+误区4：过度追求负相关
+很多人认为负相关越强越好。
+但实际上，如果一个资产长期收益率很低，即使负相关也没用。
+
+正确做法：
+在保证收益率的前提下，追求低相关或负相关。
+
+误区5：忽视其他风险因素
+很多人只看相关性，忽视了流动性、波动率等其他风险。
+
+正确做法：
+综合考虑多个风险因素，不要只看相关性。
+
+七、本节小结
+
+资产相关性的核心概念：
+- 相关系数范围：-1到1
+- 正相关：同涨同跌
+- 负相关：一涨一跌
+- 低相关：各走各的
+
+Pandas计算相关性的步骤：
+1. 获取历史价格数据
+2. 计算日收益率
+3. 计算Pearson相关系数矩阵
+4. 可视化热力图
+
+实战应用：
+1. 资产配置决策支持
+2. 风险对冲策略设计
+3. 投资组合再平衡时机判断
+
+优化建议：
+- 加权平均相关性 < 0.3：分散化良好
+- 加权平均相关性 0.3-0.5：分散化一般
+- 加权平均相关性 > 0.5：分散化较差
+
+记住：分散投资不是简单地买多个资产，而是要确保这些资产之间的相关性不要太高。
+用Pandas计算相关性，让你的投资组合真正做到"东方不亮西方亮"。
+
+至此，第四章"数组与链表：构建多元化资产组合"就结束了。
+我们学习了如何用数组管理资产、用链表设计资金流转、用Pandas分析相关性。
+
+下一章，我们将学习"栈与队列"，探讨如何控制消费欲望和设计收入优先级队列。

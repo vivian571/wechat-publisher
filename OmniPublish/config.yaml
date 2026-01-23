@@ -1,0 +1,71 @@
+# OmniPublish 配置文件
+
+# 全局配置
+global:
+  canonical_base_url: "${CANONICAL_BASE_URL}"
+  retry_times: 3
+  retry_delay: 5
+  log_level: "${LOG_LEVEL}"
+  random_delay_range: [2, 5]
+
+# 图床配置
+image_storage:
+  provider: "cloudflare_r2"
+  
+  cloudflare_r2:
+    account_id: "${R2_ACCOUNT_ID}"
+    access_key_id: "${R2_ACCESS_KEY}"
+    secret_access_key: "${R2_SECRET_KEY}"
+    bucket_name: "${R2_BUCKET_NAME}"
+    public_url: "${R2_PUBLIC_URL}"
+
+# 平台配置
+platforms:
+  # 国际平台
+  devto:
+    enabled: true
+    api_key: "${DEVTO_API_KEY}"
+    priority: 1
+  
+  hashnode:
+    enabled: true
+    access_token: "${HASHNODE_TOKEN}"
+    publication_id: "${HASHNODE_PUBLICATION_ID}"
+    priority: 2
+  
+  medium:
+    enabled: false
+    integration_token: "${MEDIUM_TOKEN}"
+    priority: 3
+  
+  twitter:
+    enabled: false
+    api_key: "${TWITTER_API_KEY}"
+    api_secret: "${TWITTER_API_SECRET}"
+    access_token: "${TWITTER_ACCESS_TOKEN}"
+    access_token_secret: "${TWITTER_ACCESS_TOKEN_SECRET}"
+    priority: 4
+  
+  # 国内平台
+  juejin:
+    enabled: false
+    cookie: "${JUEJIN_COOKIE}"
+    priority: 5
+  
+  wechat:
+    enabled: false
+    appid: "${WECHAT_APPID}"
+    secret: "${WECHAT_SECRET}"
+    priority: 6
+  
+  csdn:
+    enabled: false
+    cookie: "${CSDN_COOKIE}"
+    priority: 7
+
+# 通知配置
+notifications:
+  telegram:
+    enabled: false
+    bot_token: "${TELEGRAM_BOT_TOKEN}"
+    chat_id: "${TELEGRAM_CHAT_ID}"
