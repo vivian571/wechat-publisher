@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.wechat-publisher.international-auto-publish</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/ax/wechat-publisher/international_manager.sh</string>
+        <string>start</string>
+        <string>--interval</string>
+        <string>600</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/ax/wechat-publisher</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/ax/wechat-publisher/international_service.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/ax/wechat-publisher/international_service_error.log</string>
+    <key>ThrottleInterval</key>
+    <integer>60</integer>
+</dict>
+</plist>

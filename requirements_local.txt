@@ -1,0 +1,17 @@
+moviepy==2.1.2
+edge-tts==6.1.19
+loguru==0.7.3
+openai==1.56.1
+requests>=2.31.0
+pyyaml
+g4f==0.5.2.2
+pydantic
+redis==5.2.0
+python-multipart==0.0.19
+anyio
+distro
+httpx
+jiter
+sniffio
+tqdm
+typing_extensions

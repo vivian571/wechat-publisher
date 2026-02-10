@@ -3,8 +3,14 @@
     "app_secret": "your_app_secret_here",
     "api_base_url": "https://api.weixin.qq.com",
     "processed_mark": ".published",
-    "image_extensions": [".jpg", ".jpeg", ".png", ".gif"],
+    "image_extensions": [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif"
+    ],
     "max_title_length": 64,
     "max_retry": 3,
     "retry_interval": 5
 }
+K

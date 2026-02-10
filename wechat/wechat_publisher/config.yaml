@@ -24,6 +24,17 @@ publish:
   default_author: "自动发布"
   show_cover: 1  # 是否显示封面图
   
+# md2模板配置
+md2_template:
+  enabled: true  # 是否启用md2模板
+  theme: "notebook"  # 模板主题
+  width: 440  # 图片宽度
+  height: 586  # 图片高度
+  theme_mode: ""  # 主题模式
+  split_mode: "noSplit"  # 分割模式
+  wechat_mode: true  # 微信模式
+  fallback_to_css: true  # md2失败时回退到CSS样式
+  
 # 监控配置
 watch:
   recursive: true  # 是否监控子目录

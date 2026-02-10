@@ -408,6 +408,7 @@ class WeChatPublisher:
             if title in self.published_articles:
                 logging.info(f"文章 '{title}' 已经发布过，本次将跳过。", extra=self.log_extra)
                 return
+            logging.info(f"[DEBUG] 文章未发布过，继续处理: {title}", extra={'account_name': self.account_name})
 
             html_after_images, local_image_paths = self._upload_and_replace_images(html_body, os.path.dirname(file_path))
             
@@ -417,6 +418,7 @@ class WeChatPublisher:
             html_after_images = self._convert_lists_to_paragraphs(html_after_images)
 
             thumb_media_id = self._upload_cover_image(metadata, local_image_paths, title)
+            logging.info(f"[DEBUG] 封面图片media_id: {thumb_media_id}", extra={'account_name': self.account_name})
 
             if not thumb_media_id:
                 logging.error(f"⚠️  封面图片上传失败！", extra={'account_name': self.account_name})
@@ -428,7 +430,9 @@ class WeChatPublisher:
                 logging.error(f"⚠️  建议：修复 IP 白名单问题后重新运行", extra={'account_name': self.account_name})
                 return
 
+            logging.info(f"[DEBUG] 即将调用 _wrap_html_with_style", extra={'account_name': self.account_name})
             final_html = self._wrap_html_with_style(html_after_images, title)
+            logging.info(f"[DEBUG] _wrap_html_with_style 返回内容长度: {len(final_html)}", extra={'account_name': self.account_name})
             self.create_draft(title, final_html, thumb_media_id, author, digest)
 
         except Exception as e:
@@ -615,12 +619,89 @@ class WeChatPublisher:
     # END FIX:
     # END FIX:
 
+    def _generate_md2_image(self, markdown_content, title):
+        """
+        使用本地md2服务生成公众号图片
+        替代原有的md2 API调用（API密钥无效）
+        """
+        try:
+            # 本地服务地址
+            api_url = "http://localhost:8081/convert"
+            
+            payload = {
+                "markdown": markdown_content,
+                "theme": "default"
+            }
+            
+            logging.info(f"正在调用本地md2服务生成图片...", extra={'account_name': self.account_name})
+            response = self.image_session.post(api_url, json=payload, timeout=60)
+            response.raise_for_status()
+            
+            result = response.json()
+            if result.get('code') == 200 and result.get('data', {}).get('image'):
+                # 获取base64图片数据
+                image_data = result['data']['image']
+                
+                # 解码base64数据
+                if 'base64,' in image_data:
+                    import base64
+                    base64_content = image_data.split('base64,')[1]
+                    image_bytes = base64.b64decode(base64_content)
+                    
+                    # 保存为临时文件
+                    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
+                    temp_file.write(image_bytes)
+                    temp_file.close()
+                    
+                    logging.info(f"✓ 本地md2图片生成成功: {temp_file.name}", extra={'account_name': self.account_name})
+                    return temp_file.name
+                else:
+                    logging.error(f"图片数据格式错误", extra={'account_name': self.account_name})
+                    return None
+            else:
+                logging.error(f"本地md2服务返回错误: {result}", extra={'account_name': self.account_name})
+                return None
+                
+        except requests.exceptions.ConnectionError:
+            logging.warning("本地md2服务未启动，将使用CSS样式", extra={'account_name': self.account_name})
+            return None
+        except Exception as e:
+            logging.error(f"调用本地md2服务失败: {e}", extra={'account_name': self.account_name})
+            return None
+
     def _wrap_html_with_style(self, html_body, title):
         """
         为 HTML 内容添加样式。
-        优先使用账号专属样式 styles/style_{account_name}.css，
-        如果不存在则回退到默认 style.css
+        优先使用md2生成的图片，其次使用账号专属样式，最后回退到默认样式
         """
+        logging.info(f"[DEBUG] 开始_wrap_html_with_style，标题: {title}，内容长度: {len(html_body)}", extra={'account_name': self.account_name})
+        # 首先尝试使用md2生成图片
+        md2_image_url = self._generate_md2_image(html_body, title)
+        logging.info(f"[DEBUG] md2生成结果: {md2_image_url}", extra={'account_name': self.account_name})
+        if md2_image_url:
+            try:
+                # 本地服务直接返回文件路径，无需下载
+                logging.info(f"✓ 本地md2图片处理成功: {md2_image_url}", extra={'account_name': self.account_name})
+                
+                # 读取图片文件并转换为base64
+                with open(md2_image_url, 'rb') as img_file:
+                    img_data = img_file.read()
+                    base64_data = base64.b64encode(img_data).decode('utf-8')
+                
+                # 清理临时文件
+                try:
+                    os.unlink(md2_image_url)
+                except:
+                    pass
+                
+                # 返回包含md2图片的HTML
+                img_html = f'<img src="data:image/png;base64,{base64_data}" alt="{title}" style="max-width:100%;height:auto;display:block;margin:0 auto;" />'
+                return f'<!DOCTYPE html><html><head><meta charset="utf-8"><title>{title}</title></head><body>{img_html}</body></html>'
+                
+            except Exception as e:
+                logging.warning(f"本地md2图片处理失败，将使用CSS样式: {e}", extra={'account_name': self.account_name})
+        
+        # 回退到原有的CSS样式处理
         base_dir = os.path.dirname(__file__)
         
         # 优先查找账号专属样式
@@ -972,10 +1053,12 @@ class DocumentWatcher(FileSystemEventHandler):
 
     def on_modified(self, event):
         if not event.is_directory and event.src_path.endswith(('.md', '.markdown')):
+            logging.info(f"[DEBUG] 文件修改事件: {event.src_path}", extra={'account_name': 'System'})
             self._handle_event(event.src_path)
 
     def on_created(self, event):
         if not event.is_directory and event.src_path.endswith(('.md', '.markdown')):
+            logging.info(f"[DEBUG] 文件创建事件: {event.src_path}", extra={'account_name': 'System'})
             self._handle_event(event.src_path)
 
     def _handle_event(self, file_path):
