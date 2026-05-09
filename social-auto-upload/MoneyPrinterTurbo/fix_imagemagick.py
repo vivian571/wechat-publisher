@@ -1,0 +1,1 @@
+import toml; c=toml.load('config.toml'); c['app']['imagemagick_path'] = r'D:\ImageMagick-7.1.2-Q16-HDRI\magick.exe'; f=open('config.toml','w',encoding='utf-8'); toml.dump(c,f); f.close(); print('Fixed!')

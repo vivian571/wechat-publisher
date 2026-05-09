@@ -62,7 +62,9 @@ class MatrixAutoScheduler:
                     "gemini": {"api_key": "", "model": "gemini-2.0-flash-exp"},
                     "openai": {"api_key": "", "model": "gpt-4o-mini", "base_url": "https://api.openai.com/v1"}
                 },
-                "generation_settings": {"temperature": 0.8, "max_tokens": 3000}
+                "generation_settings": {"temperature": 0.8, "max_tokens": 3000},
+                "backup_to_external": True,
+                "backup_path": "/Volumes/Crucial X9/wechat_backups"
             }
         
         # 初始化 AI 客户端
@@ -77,6 +79,7 @@ class MatrixAutoScheduler:
     def _init_ai_client(self):
         """初始化 AI 客户端"""
         provider = self.config.get("ai_provider", "zhipu")
+        print(f"DEBUG: provider={provider}, OPENAI_AVAILABLE={OPENAI_AVAILABLE}")
         
         # 优先使用智谱（通过 OpenAI 兼容接口）
         if provider == "zhipu" and ZHIPU_AVAILABLE:
@@ -87,16 +90,21 @@ class MatrixAutoScheduler:
                     api_key=api_config["api_key"],
                     base_url="https://open.bigmodel.cn/api/paas/v4/"
                 )
+            else:
+                print(f"DEBUG: zhipu api_key missing")
         
         # 其次使用 OpenAI
         if provider == "openai" and OPENAI_AVAILABLE:
-            api_config = self.config["api_config"]["openai"]
+            api_config = self.config.get("api_config", {}).get("openai", {})
+            print(f"DEBUG: openai api_config={api_config}")
             if api_config.get("api_key"):
                 print(f"✅ 使用 OpenAI ({api_config.get('model', 'gpt-4o-mini')})")
                 return OpenAI(
                     api_key=api_config["api_key"],
                     base_url=api_config.get("base_url", "https://api.openai.com/v1")
                 )
+            else:
+                print(f"DEBUG: openai api_key missing")
         
         # 最后尝试 Gemini
         if provider == "gemini" and GEMINI_AVAILABLE:
@@ -118,9 +126,9 @@ class MatrixAutoScheduler:
         """获取所有启用的账号目录"""
         accounts = []
         for account_dir in sorted(self.accounts_dir.iterdir()):
-            if account_dir.is_dir() and account_dir.name.startswith("Account_"):
+            if account_dir.is_dir() and not account_dir.name.startswith("."):
                 # 检查是否有必要的配置文件
-                if (account_dir / "system_prompt.md").exists():
+                if (account_dir / "system_prompt.md").exists() or (account_dir / "account_config.json").exists():
                     accounts.append(account_dir)
         return accounts
     
@@ -153,17 +161,17 @@ class MatrixAutoScheduler:
         account_name = account_config["name"]
         
         # 根据账号类型生成不同的话题
-        if "English" in account_name or "Tech" in account_name:
+        if "English" in account_name:
             # 技术/英语类：热门开源项目
             topics = [
                 "最近爆火的开源项目", "AI工具推荐", "效率神器分享",
                 "程序员必备工具", "2025年技术趋势", "自动化脚本技巧"
             ]
-        elif "Life" in account_name:
-            # 生活类：季节食材
+        elif "Life" in account_name or "Tech" in account_name:
+            # 生活类/养生类：季节食材
             topics = [
                 "冬季养生食材", "应季蔬菜推荐", "家常炖菜做法",
-                "快手早餐", "一人食菜谱", "暖胃汤品"
+                "快手早餐", "一人食菜谱", "暖胃汤品", "立春养生要点"
             ]
         elif "CrossBorder" in account_name:
             # 跨境类
@@ -294,12 +302,12 @@ class MatrixAutoScheduler:
         """调用发布脚本发布文章"""
         account_name = account_dir.name
         print(f"   📤 正在发布文章...")
-        print(f"   🔗 执行: python wechat_auto_post.py --account {account_name}")
+        print(f"   🔗 执行: {sys.executable} wechat_auto_post.py --account {account_name}")
         
         try:
             # 调用 wechat_auto_post.py - 不捕获输出，让用户看到扫码提示
             result = subprocess.run(
-                ["python", "wechat_auto_post.py", "--account", account_name],
+                [sys.executable, "wechat_auto_post.py", "--account", account_name],
                 cwd=str(self.base_dir),
                 timeout=600  # 10分钟超时
             )
@@ -317,6 +325,50 @@ class MatrixAutoScheduler:
         except Exception as e:
             print(f"   ❌ 发布失败: {e}")
             return False
+
+    def _persist_to_external_drive(self, account_dir: Path, content: str) -> Optional[str]:
+        """将生成的内容保存到移动硬盘备份目录"""
+        backup_base = Path(self.config.get("backup_path", "/Volumes/Crucial X9/wechat_backups"))
+        if not backup_base.exists():
+            try:
+                backup_base.mkdir(parents=True, exist_ok=True)
+            except Exception as e:
+                print(f"   ❌ 无法创建备份目录: {e}")
+                return None
+
+        # 提取标题
+        lines = content.strip().split('\n')
+        title = lines[0].strip() if lines else "Untitled"
+        # 清理文件名中的非法字符
+        safe_title = "".join(c for c in title if c.isalnum() or c in (' ', '_', '-')).strip()
+        safe_title = safe_title[:50]  # 限制长度
+
+        # 创建账号备份目录
+        account_backup_dir = backup_base / "accounts" / account_dir.name
+        account_backup_dir.mkdir(parents=True, exist_ok=True)
+
+        # 生成带时间戳的文件名
+        timestamp = datetime.now().strftime("%Y-%m-%d")
+        filename = f"{timestamp}-{safe_title}.md"
+        backup_file = account_backup_dir / filename
+
+        try:
+            with open(backup_file, 'w', encoding='utf-8') as f:
+                f.write(content)
+            print(f"   💾 已备份至移动硬盘: {backup_file}")
+            
+            # 同时备份可能存在的封面图
+            for img in ["cover.png", "cover.jpg", "cover_fixed.png", "cover_fixed.jpg", "cover_generated.jpg"]:
+                src_img = account_dir / img
+                if src_img.exists():
+                    import shutil
+                    shutil.copy2(src_img, account_backup_dir / f"{timestamp}-{safe_title}{src_img.suffix}")
+                    print(f"      🖼️ 封面图已备份")
+            
+            return str(backup_file)
+        except Exception as e:
+            print(f"   ❌ 备份失败: {e}")
+            return None
     
     def process_account(self, account_dir: Path) -> bool:
         """处理单个账号的完整流程"""
@@ -340,10 +392,15 @@ class MatrixAutoScheduler:
         # 4. 生成封面
         self.generate_cover(account_dir, title)
         
-        # 5. 发布文章
-        success = self.publish_article(account_dir)
+        # 5. 处理成果
+        if self.config.get("backup_to_external", True):
+            # 备份到移动硬盘
+            success = bool(self._persist_to_external_drive(account_dir, content))
+        else:
+            # 原有的自动化发布流程
+            success = self.publish_article(account_dir)
         
-        # 6. 发布成功后清理
+        # 6. 处理成功后清理
         if success:
             self._cleanup_after_publish(account_dir)
         
@@ -380,8 +437,13 @@ class MatrixAutoScheduler:
         else:
             print(f"   🎨 封面：将从正文图片中选择")
         
-        # 发布
-        success = self.publish_article(account_dir)
+        # 发布或备份
+        if self.config.get("backup_to_external", True):
+            # 备份到移动硬盘
+            success = bool(self._persist_to_external_drive(account_dir, content))
+        else:
+            # 发布
+            success = self.publish_article(account_dir)
         
         # 发布成功后清理
         if success:

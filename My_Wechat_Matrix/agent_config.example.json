@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "auto_publish": true,
+  "publish_delay_seconds": 5,
+  "concurrent_publish": false,
+  "published_hashes": [],
+  "excluded_accounts": [],
+  "notification": {
+    "enabled": false,
+    "webhook_url": ""
+  },
+  "retry": {
+    "enabled": true,
+    "max_attempts": 3,
+    "delay_seconds": 60
+  }
+}

@@ -1,0 +1,1 @@
+import toml; c=toml.load('config.toml'); c['app']['ffmpeg_path'] = r'C:\Program Files\ShareX\ffmpeg.exe'; f=open('config.toml','w',encoding='utf-8'); toml.dump(c,f); f.close(); print('FFmpeg path configured!')

@@ -1,0 +1,291 @@
+#!/bin/bash
+# WeChat Matrix CLI - 用于 Moltbot 集成的命令行工具
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
+# 颜色定义
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# 帮助信息
+show_help() {
+    cat << EOF
+WeChat Matrix CLI - 公众号矩阵自动化工具
+
+用法:
+    wechat-matrix <command> [options]
+
+命令:
+    generate-all                为所有账号生成文章
+    generate                    为指定账号生成文章
+        --account <name>        账号名称
+        --topic <topic>         文章主题
+    
+    start-agent                 启动自动发布代理（后台模式）
+    stop-agent                  停止自动发布代理
+    restart-agent               重启自动发布代理
+    
+    status                      查看代理状态和发布历史
+    logs                        查看实时日志
+    
+    test                        创建测试文章
+    reset                       重置已发布记录
+    
+    help                        显示此帮助信息
+
+示例:
+    wechat-matrix generate-all
+    wechat-matrix generate --account Account_A_CrossBorder --topic "AI提示词"
+    wechat-matrix start-agent
+    wechat-matrix status
+
+EOF
+}
+
+# 生成所有账号文章
+generate_all() {
+    echo -e "${BLUE}📝 正在为所有账号生成文章...${NC}"
+    cd "$PROJECT_DIR"
+    python auto_matrix.py --once
+    echo -e "${GREEN}✅ 文章生成完成${NC}"
+}
+
+# 生成指定账号文章
+generate() {
+    local account=""
+    local topic=""
+    
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --account)
+                account="$2"
+                shift 2
+                ;;
+            --topic)
+                topic="$2"
+                shift 2
+                ;;
+            *)
+                echo -e "${RED}❌ 未知参数: $1${NC}"
+                exit 1
+                ;;
+        esac
+    done
+    
+    if [ -z "$account" ]; then
+        echo -e "${RED}❌ 请指定账号名称 (--account)${NC}"
+        exit 1
+    fi
+    
+    echo -e "${BLUE}📝 正在为账号 $account 生成文章...${NC}"
+    cd "$PROJECT_DIR"
+    
+    if [ -n "$topic" ]; then
+        python generator.py --account "$account" --topic "$topic"
+    else
+        python generator.py --account "$account"
+    fi
+    
+    echo -e "${GREEN}✅ 文章生成完成${NC}"
+}
+
+# 启动代理
+start_agent() {
+    cd "$PROJECT_DIR"
+    
+    # 检查是否已运行
+    if [ -f agent.pid ]; then
+        local pid=$(cat agent.pid)
+        if ps -p "$pid" > /dev/null 2>&1; then
+            echo -e "${YELLOW}⚠️  代理已在运行 (PID: $pid)${NC}"
+            return 0
+        fi
+    fi
+    
+    echo -e "${BLUE}🚀 正在启动自动发布代理...${NC}"
+    nohup python auto_publish_agent.py > agent.log 2>&1 &
+    local pid=$!
+    echo $pid > agent.pid
+    
+    sleep 2
+    
+    if ps -p "$pid" > /dev/null 2>&1; then
+        echo -e "${GREEN}✅ 代理已启动 (PID: $pid)${NC}"
+        echo -e "${YELLOW}📋 查看日志: tail -f $PROJECT_DIR/agent.log${NC}"
+    else
+        echo -e "${RED}❌ 代理启动失败${NC}"
+        exit 1
+    fi
+}
+
+# 停止代理
+stop_agent() {
+    cd "$PROJECT_DIR"
+    
+    if [ ! -f agent.pid ]; then
+        echo -e "${YELLOW}⚠️  代理未运行${NC}"
+        return 0
+    fi
+    
+    local pid=$(cat agent.pid)
+    
+    if ! ps -p "$pid" > /dev/null 2>&1; then
+        echo -e "${YELLOW}⚠️  代理未运行${NC}"
+        rm -f agent.pid
+        return 0
+    fi
+    
+    echo -e "${BLUE}🛑 正在停止代理 (PID: $pid)...${NC}"
+    kill "$pid"
+    sleep 2
+    
+    if ps -p "$pid" > /dev/null 2>&1; then
+        echo -e "${YELLOW}⚠️  强制停止...${NC}"
+        kill -9 "$pid"
+    fi
+    
+    rm -f agent.pid
+    echo -e "${GREEN}✅ 代理已停止${NC}"
+}
+
+# 重启代理
+restart_agent() {
+    stop_agent
+    sleep 1
+    start_agent
+}
+
+# 查看状态
+show_status() {
+    cd "$PROJECT_DIR"
+    
+    echo -e "${BLUE}📊 WeChat Matrix 状态${NC}"
+    echo "================================"
+    
+    # 代理状态
+    if [ -f agent.pid ]; then
+        local pid=$(cat agent.pid)
+        if ps -p "$pid" > /dev/null 2>&1; then
+            echo -e "${GREEN}✅ 代理状态: 运行中 (PID: $pid)${NC}"
+        else
+            echo -e "${RED}❌ 代理状态: 未运行${NC}"
+        fi
+    else
+        echo -e "${RED}❌ 代理状态: 未运行${NC}"
+    fi
+    
+    # 最近的发布记录
+    echo ""
+    echo -e "${BLUE}📋 最近的发布记录:${NC}"
+    if [ -f auto_publish_agent.log ]; then
+        tail -n 10 auto_publish_agent.log | grep -E "SUCCESS|FAILED" | tail -n 5 || echo "  暂无记录"
+    else
+        echo "  暂无记录"
+    fi
+    
+    # 待发布文章
+    echo ""
+    echo -e "${BLUE}📝 待发布文章:${NC}"
+    local has_pending=false
+    for dir in accounts/Account_*; do
+        if [ -f "$dir/output.txt" ]; then
+            echo "  - $(basename $dir)"
+            has_pending=true
+        fi
+    done
+    if [ "$has_pending" = false ]; then
+        echo "  无"
+    fi
+    
+    echo "================================"
+}
+
+# 查看日志
+show_logs() {
+    cd "$PROJECT_DIR"
+    
+    if [ ! -f agent.log ]; then
+        echo -e "${YELLOW}⚠️  日志文件不存在${NC}"
+        exit 1
+    fi
+    
+    echo -e "${BLUE}📋 实时日志 (Ctrl+C 退出):${NC}"
+    tail -f agent.log
+}
+
+# 测试
+run_test() {
+    cd "$PROJECT_DIR"
+    echo -e "${BLUE}🧪 创建测试文章...${NC}"
+    python test_agent.py
+}
+
+# 重置
+reset_published() {
+    cd "$PROJECT_DIR"
+    echo -e "${YELLOW}⚠️  即将重置已发布记录${NC}"
+    read -p "确认继续? (y/N): " confirm
+    
+    if [[ "$confirm" =~ ^[Yy]$ ]]; then
+        python auto_publish_agent.py --reset
+        echo -e "${GREEN}✅ 已重置${NC}"
+    else
+        echo -e "${YELLOW}已取消${NC}"
+    fi
+}
+
+# 主逻辑
+main() {
+    if [ $# -eq 0 ]; then
+        show_help
+        exit 0
+    fi
+    
+    case "$1" in
+        generate-all)
+            generate_all
+            ;;
+        generate)
+            shift
+            generate "$@"
+            ;;
+        start-agent)
+            start_agent
+            ;;
+        stop-agent)
+            stop_agent
+            ;;
+        restart-agent)
+            restart_agent
+            ;;
+        status)
+            show_status
+            ;;
+        logs)
+            show_logs
+            ;;
+        test)
+            run_test
+            ;;
+        reset)
+            reset_published
+            ;;
+        help|--help|-h)
+            show_help
+            ;;
+        *)
+            echo -e "${RED}❌ 未知命令: $1${NC}"
+            echo ""
+            show_help
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"

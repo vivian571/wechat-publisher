@@ -18,7 +18,7 @@ import random
 import string
 import logging
 import requests
-import aiohttp
+import aiohttp 
 import asyncio
 import configparser
 import mimetypes
@@ -43,8 +43,8 @@ logger = logging.getLogger(__name__)
 
 # --- 全局配置 ---
 DEFAULT_COVER_IMAGE_PATH = "default_cover.jpg"  # 默认封面图片路径
-COVER_IMAGES_DIR = "f:\\公众号写作\\编程\\temp_images"  # 封面图片目录路径
-USE_PERMANENT_MEDIA = True  # 是否使用永久素材
+COVER_IMAGES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cover_images")  # 封面图片目录路径
+USE_PERMANENT_MEDIA = False  # 是否使用永久素材
 PERMANENT_MEDIA_IDS = [
     "r2SuJ--pe9hF_U34Ly0J_Gnfu0A3JcEW2sJjpR9EcK2FxIZRWyBXO37XXkQQRpOk",
     "r2SuJ--pe9hF_U34Ly0J_CqFWTjPqbEeJJm9BhB9dD-DLuxCPjAGF4wVY9QQsU1s",
@@ -280,13 +280,43 @@ def load_config(config_file='config.ini'):
     """加载配置文件"""
     config = configparser.ConfigParser()
     if not os.path.exists(config_file):
-        raise FileNotFoundError(f"配置文件 {config_file} 未找到！请创建并配置。")
+        # 如果没有config.ini，返回空配置
+        return config
     config.read(config_file, encoding='utf-8')
     return config
 
+def load_accounts_from_env():
+    """从wechat/.env加载所有公众号配置"""
+    accounts = {}
+    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'wechat', '.env')
+    if not os.path.exists(env_path):
+        logger.warning(f"未找到环境文件: {env_path}")
+        return accounts
+    
+    with open(env_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # 匹配 WECHAT_ACCOUNT_XXX_APP_ID 和 WECHAT_ACCOUNT_XXX_APP_SECRET
+    id_matches = re.findall(r'WECHAT_ACCOUNT_(.+?)_APP_ID\s*=\s*(.+)', content)
+    secret_matches = re.findall(r'WECHAT_ACCOUNT_(.+?)_APP_SECRET\s*=\s*(.+)', content)
+    
+    id_dict = {name.strip(): val.strip() for name, val in id_matches}
+    secret_dict = {name.strip(): val.strip() for name, val in secret_matches}
+    
+    for name in id_dict:
+        if name in secret_dict:
+            accounts[name] = {
+                'app_id': id_dict[name],
+                'app_secret': secret_dict[name]
+            }
+            logger.info(f"加载公众号配置: [{name}]")
+            
+    logger.info(f"所有加载的公众号: {list(accounts.keys())}")
+    return accounts
+
 # --- 微信公众号 API 操作 ---
 class WeChatMP:
-    def __init__(self, app_id, app_secret):
+    def __init__(self, app_id=None, app_secret=None):
         self.app_id = app_id
         self.app_secret = app_secret
         self.access_token = None
@@ -518,7 +548,13 @@ class WeChatMP:
             logger.error(f"解析上传图片响应失败: {response.text}")
             return None
     
-    def _ensure_title_length(self, title, max_bytes=40):
+    def _ensure_title_length(self, title, max_chars=16):
+        """确保标题长度不超过指定字符数"""
+        if len(title) <= max_chars:
+            return title
+        return title[:max_chars]
+
+    def _ensure_title_length_old(self, title, max_bytes=64):
         """确保标题长度不超过指定字节数（微信公众号标题限制）"""
         # 计算字符串的字节长度
         def get_byte_length(s):
@@ -669,9 +705,10 @@ def markdown_to_html(md_content, base_path, wechat_mp_instance):
     
 # --- 文件监控处理 ---
 class MarkdownHandler(FileSystemEventHandler):
-    def __init__(self, wechat_mp_instance, base_path):
+    def __init__(self, wechat_mp_instance, base_path, accounts=None):
         self.wechat_mp = wechat_mp_instance
         self.base_path = base_path
+        self.accounts = accounts or {}
         self.processed_files = set()  # 记录已处理的文件哈希，防止重复处理
             
     def process_file(self, file_path):
@@ -696,17 +733,42 @@ class MarkdownHandler(FileSystemEventHandler):
             
             # 提取标题（首行 # 标题）
             lines = md_content.splitlines()
-            title = "Draft"  # 使用简单的标题
+            title = "未命名草稿"
+            for line in lines:
+                line = line.strip()
+                if line.startswith('# '):
+                    title = line.replace('# ', '', 1).strip()
+                    break
             
-            # 处理标题长度，确保符合微信公众号API限制
-            logger.info(f"使用标题: {title}")
+            if title == "未命名草稿":
+                title = os.path.splitext(os.path.basename(file_path))[0]
+                if '_' in title:
+                    title = title.split('_', 1)[-1]
+            
+            logger.info(f"提取到标题: {title}")
+            title = self.wechat_mp._ensure_title_length(title, max_chars=16)
+            logger.info(f"最终使用标题: {title}")
             logger.info(f"标题字节长度: {len(title.encode('utf-8'))}")
 
-            original_title = title
-            title = self.wechat_mp._ensure_title_length(title, max_bytes=40)
-            if original_title != title:
-                logger.warning(f"标题长度超出限制，已自动截断:\n原标题: {original_title}\n新标题: {title}")
-                
+            # 自动检测公众号账号
+            account_name = None
+            # 尝试从文件名或路径中检测账号
+            logger.info(f"正在匹配文件账号: {file_path}")
+            logger.info(f"可用账号列表: {list(self.accounts.keys())}")
+            for name in self.accounts:
+                if name in file_path:
+                    account_name = name
+                    break
+            
+            if not account_name:
+                logger.warning(f"无法为文件 {file_path} 匹配公众号账号，将尝试使用默认配置")
+            else:
+                logger.info(f"匹配到公众号账号: {account_name}")
+                self.wechat_mp.app_id = self.accounts[account_name]['app_id']
+                self.wechat_mp.app_secret = self.accounts[account_name]['app_secret']
+                # 重置 token 强制刷新
+                self.wechat_mp.access_token = None
+
             # 转换 Markdown 为 HTML 并处理图片
             base_path = os.path.dirname(file_path)
             html_content = markdown_to_html(md_content, base_path, self.wechat_mp)
@@ -739,8 +801,8 @@ class MarkdownHandler(FileSystemEventHandler):
                 
                 # 如果不使用永久素材或永久素材上传失败，尝试使用临时素材
                 cover_image_path = get_random_cover_image()
-                logger.info(f"正在上传临时素材: {cover_image_path}")
-                thumb_media_id = self.wechat_mp.upload_temp_media(cover_image_path, media_type='image')
+                logger.info(f"正在上传永久素材作为封面: {cover_image_path}")
+                thumb_media_id = self.wechat_mp.upload_permanent_media(cover_image_path, media_type='image')
                 
                 if not thumb_media_id:
                     logger.error(f"错误：封面图片 {cover_image_path} 上传失败，正在重试...")
@@ -886,8 +948,11 @@ def main():
         monitor_folder = config.get('Monitor', 'MONITOR_FOLDER', fallback=None)
         check_interval = config.getint('Monitor', 'CHECK_INTERVAL', fallback=60)
         
-        if not app_id or not app_secret:
-            logger.error("错误：请在配置文件中设置 APP_ID 和 APP_SECRET！")
+        # 加载多公众号配置
+        accounts = load_accounts_from_env()
+        
+        if not accounts and (not app_id or app_id == "your_app_id_here"):
+            logger.error("错误：请在配置文件中设置 APP_ID 和 APP_SECRET，或者在 wechat/.env 中配置公众号！")
             return
             
         if not monitor_folder:
@@ -910,11 +975,11 @@ def main():
         monitor_folder_abs = os.path.abspath(monitor_folder)
         logger.info(f"开始监控文件夹: {monitor_folder_abs}")
 
-        # 初始化微信 API 实例
+        # 初始化微信 API 实例 (默认使用 config 中的配置)
         wechat_mp = WeChatMP(app_id, app_secret)
 
         # 初始化文件系统事件处理器
-        event_handler = MarkdownHandler(wechat_mp, monitor_folder_abs)
+        event_handler = MarkdownHandler(wechat_mp, monitor_folder_abs, accounts=accounts)
         
         # 扫描初始文件 (可选，如果需要处理启动时已存在的文件)
         logger.info("正在扫描初始文件...")

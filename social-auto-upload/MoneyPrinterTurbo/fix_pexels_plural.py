@@ -1,0 +1,1 @@
+import toml; c=toml.load('config.toml'); c['app']['pexels_api_keys'] = c['app'].get('pexels_api_key', ''); f=open('config.toml','w',encoding='utf-8'); toml.dump(c,f); f.close(); print('Fixed pexels_api_keys!')

@@ -1,0 +1,1 @@
+import toml; c=toml.load('config.toml'); c['whisper'] = c.get('whisper', {}); c['whisper']['model_size'] = 'base'; f=open('config.toml','w',encoding='utf-8'); toml.dump(c,f); f.close(); print('Fixed whisper config!')

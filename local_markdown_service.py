@@ -35,6 +35,10 @@ class LocalMarkdownService:
     def convert_markdown_to_base64(self, markdown_content):
         """将Markdown转换为base64图片"""
         try:
+            # 每次转换都重新实例化转换器，以实现“随机排版”效果
+            self.converter = EnhancedMarkdownToImageConverter()
+            self.tech_converter = SimpleTechBloodConverter()
+            
             # 生成临时文件名
             import uuid
             temp_filename = f"md_{uuid.uuid4().hex}.png"

@@ -9,6 +9,7 @@ import os
 import json
 import markdown
 from pathlib import Path
+import re
 from datetime import datetime
 from typing import Dict, Optional
 
@@ -83,10 +84,17 @@ class ContentGenerator:
     
     def load_account_config(self, account_path: Path) -> Dict:
         """加载账号配置"""
-        # 读取账号配置
+        # 读取账号配置 (修正：改为可选，防止因文件缺失导致崩溃)
         config_file = account_path / "account_config.json"
-        with open(config_file, 'r', encoding='utf-8') as f:
-            account_config = json.load(f)
+        if config_file.exists():
+            with open(config_file, 'r', encoding='utf-8') as f:
+                account_config = json.load(f)
+        else:
+            account_config = {
+                "account_name": account_path.name,
+                "enabled": True,
+                "target_word_count": 1500
+            }
         
         # 读取系统提示词
         prompt_file = account_path / "system_prompt.md"
@@ -101,11 +109,51 @@ class ContentGenerator:
         else:
             style_reference = "专业、客观、理性，具有前瞻性，语言精炼，排版清晰。"
         
+        # 加载外部专家角色 (从 agency-agents 仓库)
+        agency_rel_path = account_config.get("agency_agent")
+        agency_context = ""
+        if agency_rel_path:
+            agency_context = self._parse_agency_agent(agency_rel_path)
+        
         return {
             "config": account_config,
             "system_prompt": system_prompt,
-            "style_reference": style_reference
+            "style_reference": style_reference,
+            "agency_context": agency_context
         }
+    
+    def _parse_agency_agent(self, agent_rel_path: str) -> str:
+        """从 agency-agents 目录解析 Markdown 专家角色"""
+        agent_path = self.base_dir / "agency-agents" / agent_rel_path
+        if not agent_path.exists():
+            print(f"⚠️  未找到 Agency Agent 文件: {agent_path}")
+            return ""
+        
+        try:
+            with open(agent_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            # 移除 YAML Frontmatter (--- ... ---)
+            content = re.sub(r'^---.*?---', '', content, flags=re.DOTALL)
+            
+            sections = []
+            # 提取 Identity & Memory 部分
+            identity_match = re.search(r'#+\s*Identity\s*&\s*Memory(.*?)(?=#+|$)', content, re.IGNORECASE | re.DOTALL)
+            if identity_match:
+                sections.append(f"【专家身份】\n{identity_match.group(1).strip()}")
+            
+            # 提取 Critical Rules 部分
+            rules_match = re.search(r'#+\s*Critical\s*Rules(.*?)(?=#+|$)', content, re.IGNORECASE | re.DOTALL)
+            if rules_match:
+                sections.append(f"【核心守则】\n{rules_match.group(1).strip()}")
+                
+            if not sections:
+                return content.strip()[:1500] # 如果没找到特定段落，取前1500字
+                
+            return "\n\n".join(sections)
+        except Exception as e:
+            print(f"❌ 解析 Agency Agent 失败 ({agent_rel_path}): {e}")
+            return ""
     
     def generate_content(self, account_name: str, topic: Optional[str] = None) -> str:
         """为指定账号生成内容"""
@@ -132,7 +180,8 @@ class ContentGenerator:
         text_content = self._call_ai(
             system_prompt=account_data["system_prompt"],
             user_prompt=user_prompt,
-            style_reference=account_data["style_reference"]
+            style_reference=account_data["style_reference"],
+            agency_context=account_data.get("agency_context", "")
         )
         
         # 保存输出为纯文本
@@ -160,13 +209,16 @@ class ContentGenerator:
         
         return prompt
     
-    def _call_ai(self, system_prompt: str, user_prompt: str, style_reference: str) -> str:
+    def _call_ai(self, system_prompt: str, user_prompt: str, style_reference: str, agency_context: str = "") -> str:
         """调用AI生成内容"""
         provider = self.config.get("ai_provider", "openai")
         gen_settings = self.config.get("generation_settings", {})
         
         # 组合完整的系统提示词
         full_system_prompt = f"{system_prompt}\n\n请模仿以下文章的风格和语气：\n\n{style_reference}"
+        
+        if agency_context:
+            full_system_prompt = f"### 专业级指导原则 (Agency Framework) ###\n{agency_context}\n\n" + full_system_prompt
         
         if provider == "openai":
             model = self.config["api_config"]["openai"]["model"]

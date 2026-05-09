@@ -1,5 +1,6 @@
 # Secrets and API Keys
 matrix_config.json
+agent_config.json
 
 # Generated Content
 # accounts/*/output.txt
@@ -24,3 +25,7 @@ env/
 # Logs
 *.log
 .browser_data/
+
+# Agent
+agent.pid
+auto_publish_agent.log

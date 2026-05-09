@@ -1,0 +1,1 @@
+import toml; c=toml.load('config.toml'); c['app']['zhipu_api_key'] = 'f18aacb6499a4d8d9fcedb80543831e2.ZuWicOFsWW8wzYSF'; c['app']['pexels_api_key'] = 'f18aacb6499a4d8d9fcedb80543831e2.ZuWicOFsWW8wzYSF'; f=open('config.toml','w',encoding='utf-8'); toml.dump(c,f); f.close(); print('Keys restored!')

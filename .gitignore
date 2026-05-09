@@ -1,11 +1,17 @@
 # Secrets
 config.ini
 config.json
+config.yaml
+wechat/config.yaml
+wechat/.env
 *.key
 *.pem
 .env
 **/account_config.json
 美国节点.txt
+wechat/wechat_publisher.pid
+wechat_publisher.pid
+.cache/
 
 # Logs
 *.log

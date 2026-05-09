@@ -13,25 +13,103 @@ logging.basicConfig(level=logging.INFO)
 class SimpleTechBloodConverter:
     """超简热血技术风格转换器"""
     
-    def __init__(self):
-        self.colors = {
-            'background': '#0c0c0c',
-            'text': '#e0e0e0', 
-            'title': '#ff4444',
-            'code_bg': '#1e1e1e',
-            'code_text': '#ffcc00',
-            'border': '#333333'
+    def __init__(self, theme=None):
+        # 定义多套热血/科技主题
+        self.themes = {
+            'blood_red': { # 热血红
+                'background': '#0c0c0c',
+                'text': '#e0e0e0',
+                'title': '#ff4444',
+                'code_bg': '#1e1e1e',
+                'code_text': '#ffcc00',
+                'border': '#333333'
+            },
+            'neon_blue': { # 霓虹蓝
+                'background': '#000814',
+                'text': '#caf0f8',
+                'title': '#00b4d8',
+                'code_bg': '#001d3d',
+                'code_text': '#90e0ef',
+                'border': '#003566'
+            },
+            'matrix_green': { # 黑客绿
+                'background': '#000000',
+                'text': '#00ff41',
+                'title': '#008f11',
+                'code_bg': '#0d0208',
+                'code_text': '#003b00',
+                'border': '#008f11'
+            },
+            'cyber_purple': { # 赛博紫
+                'background': '#1a0033',
+                'text': '#f0e6ff',
+                'title': '#bf00ff',
+                'code_bg': '#2d004d',
+                'code_text': '#e6b3ff',
+                'border': '#4d0099'
+            }
         }
+
+        import random
+        if theme and theme in self.themes:
+            selected_theme = self.themes[theme]
+        else:
+            theme_name = random.choice(list(self.themes.keys()))
+            selected_theme = self.themes[theme_name]
+            logging.info(f"热血转换器随机选择主题: {theme_name}")
+
+        self.colors = selected_theme
+        
+        # 随机微调背景色，增加灵活性
+        bg_rgb = self._hex_to_rgb(self.colors['background'])
+        self.bg_variation = (
+            random.randint(bg_rgb[0], bg_rgb[0] + 20),
+            random.randint(bg_rgb[1], bg_rgb[1] + 20),
+            random.randint(bg_rgb[2], bg_rgb[2] + 20)
+        )
         
         self.font_size = 16
         self.line_height = 28
         self.margin = 40
         self.max_width = 800
         
-        # 简单字体
-        self.font = ImageFont.load_default()
-        self.title_font = self.font
-        self.code_font = self.font
+        # 加载字体
+        self.font_path = self._find_font()
+        if self.font_path:
+            try:
+                self.font = ImageFont.truetype(self.font_path, self.font_size)
+                self.title_font = ImageFont.truetype(self.font_path, self.font_size + 4)
+                self.code_font = ImageFont.truetype(self.font_path, self.font_size - 2)
+            except:
+                self.font = ImageFont.load_default()
+                self.title_font = self.font
+                self.code_font = self.font
+        else:
+            self.font = ImageFont.load_default()
+            self.title_font = self.font
+            self.code_font = self.font
+    
+    def _find_font(self):
+        """查找可用字体"""
+        font_paths = [
+            "/System/Library/Fonts/PingFang.ttc",  # macOS
+            "/System/Library/Fonts/STHeiti Medium.ttc", # macOS fallback
+            "/System/Library/Fonts/STHeiti Light.ttc", # macOS fallback
+            "/System/Library/Fonts/Supplemental/Songti.ttc", # macOS fallback
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",  # Linux
+            "/usr/share/fonts/TTF/DejaVuSans.ttf",
+            "C:/Windows/Fonts/simhei.ttf",  # Windows
+            "C:/Windows/Fonts/msyh.ttc",
+        ]
+        
+        for path in font_paths:
+            if os.path.exists(path):
+                return path
+        return None
+    
+    def _hex_to_rgb(self, hex_color):
+        hex_color = hex_color.lstrip('#')
+        return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
     
     def create_simple_tech_image(self, text_content, output_path):
         """创建简单热血技术风格图片"""
@@ -45,11 +123,13 @@ class SimpleTechBloodConverter:
             draw = ImageDraw.Draw(img)
             
             # 绘制渐变背景
+            start_bg = self._hex_to_rgb(self.colors['background'])
+            end_bg = self.bg_variation
             for y in range(height):
                 ratio = y / height
-                r = int(12 + (26 - 12) * ratio)
-                g = int(12 + (26 - 12) * ratio)
-                b = int(12 + (26 - 12) * ratio)
+                r = int(start_bg[0] + (end_bg[0] - start_bg[0]) * ratio)
+                g = int(start_bg[1] + (end_bg[1] - start_bg[1]) * ratio)
+                b = int(start_bg[2] + (end_bg[2] - start_bg[2]) * ratio)
                 draw.line([(0, y), (self.max_width, y)], fill=(r, g, b))
             
             # 重新绘制内容
@@ -70,7 +150,10 @@ class SimpleTechBloodConverter:
                     # 热血红色标题
                     if level == 1:
                         try:
-                            title_font = ImageFont.truetype("/System/Library/Fonts/PingFang.ttc", self.font_size + 8)
+                            if self.font_path:
+                                title_font = ImageFont.truetype(self.font_path, self.font_size + 8)
+                            else:
+                                title_font = self.font
                         except:
                             title_font = self.font
                         

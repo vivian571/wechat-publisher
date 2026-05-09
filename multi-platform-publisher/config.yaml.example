@@ -1,0 +1,66 @@
+# 多平台内容发布工具配置示例
+# 复制此文件为 config.yaml 并根据需要修改
+
+# 路径配置
+paths:
+  watch_dir: ${WATCH_DIR:-./documents}  # 监控的文档目录
+  image_dir: ${IMAGE_DIR:-./images}     # 图片目录
+  published_dir: ${PUBLISHED_DIR:-./published}  # 已发布文章备份目录
+
+# 账户配置
+# 每个账户对应一个发布平台
+# 账户名将用于匹配文档目录和日志记录
+accounts:
+  # 微信公众号
+  技术博客:
+    type: wechat
+    app_id: ${WECHAT_APP_ID}         # 从环境变量读取
+    app_secret: ${WECHAT_APP_SECRET} # 从环境变量读取
+    author: "技术团队"                # 默认作者
+    
+  # 掘金
+  掘金专栏:
+    type: juejin
+    username: ${JUEJIN_USERNAME}     # 掘金登录账号
+    password: ${JUEJIN_PASSWORD}     # 掘金登录密码
+    author: "技术博主"
+    categories: ["后端", "Python"]   # 文章分类
+    tags: ["技术", "编程"]           # 文章标签
+    
+  # CSDN
+  CSDN博客:
+    type: csdn
+    username: ${CSDN_USERNAME}       # CSDN登录账号
+    password: ${CSDN_PASSWORD}       # CSDN登录密码
+    author: "技术达人"
+    categories: ["后端开发", "Python"]  # 文章分类
+    tags: ["技术", "编程", "教程"]      # 文章标签
+    
+  # 头条号
+  技术头条:
+    type: toutiao
+    username: ${TOUTIAO_USERNAME}
+    password: ${TOUTIAO_PASSWORD}
+    author: "技术小编"
+    
+  # 知乎专栏
+  技术专栏:
+    type: zhihu
+    email: ${ZHIHU_EMAIL}
+    password: ${ZHIHU_PASSWORD}
+    author: "技术作者"
+
+# 监控配置
+watch:
+  recursive: true  # 是否递归监控子目录
+  file_types: [".md", ".markdown"]  # 监控的文件类型
+
+# 全局发布配置
+publish:
+  default_author: "自动发布"  # 默认作者，如果文章中没有指定作者
+  show_cover: true          # 是否显示封面图
+  
+# 日志配置
+logging:
+  level: "INFO"  # 日志级别: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  file: "publisher.log"  # 日志文件路径，为空则只输出到控制台

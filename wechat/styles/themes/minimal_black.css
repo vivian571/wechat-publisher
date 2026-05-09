@@ -1,0 +1,62 @@
+body {
+    background-color: #0d1117;
+    margin: 0;
+    padding: 20px;
+    font-family: 'Fira Code', 'PingFang SC', monospace;
+}
+
+section.markdown-body {
+    max-width: 677px;
+    margin: 0 auto;
+    background-color: #161b22;
+    padding: 30px;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    color: #c9d1d9;
+}
+
+h2 {
+    color: #58a6ff;
+    font-size: 20px;
+    border-bottom: 1px solid #30363d;
+    padding-bottom: 10px;
+}
+
+h3 {
+    color: #79c0ff;
+    font-size: 18px;
+}
+
+p {
+    line-height: 1.6;
+    margin-bottom: 1.2em;
+}
+
+strong {
+    color: #ffa657;
+}
+
+code {
+    background-color: rgba(110,118,129,0.4);
+    padding: 0.2em 0.4em;
+    border-radius: 6px;
+    color: #ff7b72;
+}
+
+pre {
+    background-color: #0d1117;
+    border: 1px solid #30363d;
+    padding: 16px;
+    border-radius: 6px;
+}
+
+blockquote {
+    border-left: 4px solid #30363d;
+    color: #8b949e;
+    padding: 0 1em;
+    margin: 0 0 16px 0;
+}
+
+li {
+    margin-bottom: 4px;
+}

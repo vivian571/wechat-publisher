@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 class EnhancedMarkdownToImageConverter:
     """增强版Markdown转图片转换器"""
     
-    def __init__(self):
+    def __init__(self, theme=None):
         # 初始化Markdown解析器
         self.md = markdown.Markdown(extensions=[
             'extra',
@@ -28,25 +28,102 @@ class EnhancedMarkdownToImageConverter:
             'toc'
         ])
         
-        # 微信公众号优化配置
-        self.font_size = 16
-        self.line_height = 28
-        self.margin = 50
-        self.max_width = 800
-        
-        # 颜色配置（微信公众号风格）
-        self.colors = {
-            'background': '#ffffff',
-            'text': '#333333',
-            'title': '#2c3e50',
-            'subtitle': '#34495e',
-            'code_bg': '#f8f9fa',
-            'code_text': '#e83e8c',
-            'quote_border': '#3498db',
-            'link': '#3498db',
-            'highlight': '#fff3cd',
-            'border': '#dee2e6'
+        # 定义多套风格主题
+        self.themes = {
+            'warm_tech': { # 科技暖风感
+                'font_size': 16,
+                'line_height': 32,
+                'margin': 30,
+                'max_width': 900,
+                'colors': {
+                    'background': '#FDFDFB',
+                    'text': '#333333',
+                    'title': '#1A1A1A',
+                    'subtitle': '#444444',
+                    'code_bg': '#F4F4F2',
+                    'code_text': '#C0392B',
+                    'quote_border': '#E67E22',
+                    'link': '#2980B9',
+                    'highlight': '#FFF9E6',
+                    'border': '#EBEBE9'
+                }
+            },
+            'minimalist': { # 极简主义
+                'font_size': 16,
+                'line_height': 30,
+                'margin': 40,
+                'max_width': 850,
+                'colors': {
+                    'background': '#FFFFFF',
+                    'text': '#2C3E50',
+                    'title': '#000000',
+                    'subtitle': '#7F8C8D',
+                    'code_bg': '#F8F9F9',
+                    'code_text': '#2980B9',
+                    'quote_border': '#BDC3C7',
+                    'link': '#3498DB',
+                    'highlight': '#F4F6F7',
+                    'border': '#D5DBDB'
+                }
+            },
+            'night_vision': { # 深夜模式
+                'font_size': 16,
+                'line_height': 30,
+                'margin': 35,
+                'max_width': 880,
+                'colors': {
+                    'background': '#1A1A1B',
+                    'text': '#D7DADC',
+                    'title': '#FFFFFF',
+                    'subtitle': '#818384',
+                    'code_bg': '#272729',
+                    'code_text': '#FF4500',
+                    'quote_border': '#4F545C',
+                    'link': '#0079D3',
+                    'highlight': '#313335',
+                    'border': '#343536'
+                }
+            },
+            'forest_breeze': { # 森林清风
+                'font_size': 16,
+                'line_height': 32,
+                'margin': 30,
+                'max_width': 900,
+                'colors': {
+                    'background': '#F1F8E9',
+                    'text': '#33691E',
+                    'title': '#1B5E20',
+                    'subtitle': '#558B2F',
+                    'code_bg': '#DCEDC8',
+                    'code_text': '#2E7D32',
+                    'quote_border': '#8BC34A',
+                    'link': '#4CAF50',
+                    'highlight': '#F9FBE7',
+                    'border': '#C5E1A5'
+                }
+            }
         }
+        
+        # 如果指定了主题，使用指定主题；否则随机选择
+        import random
+        if theme and theme in self.themes:
+            selected_theme = self.themes[theme]
+            logging.info(f"使用指定主题: {theme}")
+        else:
+            theme_name = random.choice(list(self.themes.keys()))
+            selected_theme = self.themes[theme_name]
+            logging.info(f"随机选择主题: {theme_name}")
+            
+        # 应用主题配置
+        self.font_size = selected_theme['font_size']
+        self.line_height = selected_theme['line_height']
+        self.margin = selected_theme['margin']
+        self.max_width = selected_theme['max_width']
+        self.colors = selected_theme['colors']
+        
+        # 随机微调参数，增加“灵活性”
+        self.line_height += random.randint(-2, 4)
+        self.margin += random.randint(-5, 10)
         
         # 字体配置
         self.fonts = self._load_fonts()
@@ -58,20 +135,42 @@ class EnhancedMarkdownToImageConverter:
         # 尝试加载各种系统字体
         font_paths = [
             "/System/Library/Fonts/PingFang.ttc",  # macOS
-            "/System/Library/Fonts/STHeiti Medium.ttc",
+            "/System/Library/Fonts/STHeiti Medium.ttc", # macOS fallback
+            "/System/Library/Fonts/STHeiti Light.ttc", # macOS fallback
+            "/System/Library/Fonts/Supplemental/Songti.ttc", # macOS fallback
             "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",  # Linux
             "/usr/share/fonts/TTF/DejaVuSans.ttf",
             "C:/Windows/Fonts/simhei.ttf",  # Windows
             "C:/Windows/Fonts/msyh.ttc",
         ]
         
+        main_font = None
+        self.font_path = None
+        
+        for path in font_paths:
+            if os.path.exists(path):
+                try:
+                    # 尝试加载字体
+                    main_font = ImageFont.truetype(path, self.font_size)
+                    logging.info(f"成功加载字体: {path}")
+                    self.font_path = path
+                    break
+                except Exception as e:
+                    logging.warning(f"加载字体 {path} 失败: {e}")
+        
         # 默认字体
-        try:
-            fonts['default'] = ImageFont.truetype(font_paths[0], self.font_size)
-            fonts['title'] = ImageFont.truetype(font_paths[0], self.font_size + 8)
-            fonts['subtitle'] = ImageFont.truetype(font_paths[0], self.font_size + 4)
-            fonts['code'] = ImageFont.truetype(font_paths[0], self.font_size - 2)
-        except:
+        if main_font:
+            fonts['default'] = main_font
+            try:
+                fonts['title'] = ImageFont.truetype(self.font_path, self.font_size + 8)
+                fonts['subtitle'] = ImageFont.truetype(self.font_path, self.font_size + 4)
+                fonts['code'] = ImageFont.truetype(self.font_path, self.font_size - 2)
+            except:
+                fonts['title'] = main_font
+                fonts['subtitle'] = main_font
+                fonts['code'] = main_font
+        else:
+            logging.warning("未找到合适的中文字体，使用默认字体（无法显示中文）")
             # 回退到默认字体
             fonts['default'] = ImageFont.load_default()
             fonts['title'] = ImageFont.load_default()
@@ -233,7 +332,7 @@ class EnhancedMarkdownToImageConverter:
                     y += y_offset
                 
                 elif item['type'] == 'paragraph':
-                    # 文本换行处理
+                    # 文本换行处理 - 取消首行缩进，采用段落间距
                     text = item['text']
                     max_width = width - 2 * self.margin
                     lines = self.wrap_text(text, self.fonts['default'], max_width, draw)
@@ -241,6 +340,9 @@ class EnhancedMarkdownToImageConverter:
                     for line in lines:
                         draw.text((self.margin, y), line, font=self.fonts['default'], fill=self.colors['text'])
                         y += self.line_height
+                    
+                    # 段落后增加较大的间距，体现大气感
+                    y += self.line_height * 0.5
                 
                 elif item['type'] == 'code':
                     # 绘制代码块背景

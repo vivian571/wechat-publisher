@@ -12,9 +12,11 @@ from pathlib import Path
 BASE_DIR = Path("/Users/ax/wechat-publisher")
 TASK_DIR = BASE_DIR / "video_tasks"
 OUTPUT_DIR = Path("/Users/ax/wechat-publisher/social-auto-upload/videoFile")
+MUSIC_DIR = BASE_DIR / "music" / "energetic"
 
 MONEY_PRINTER_DIR = BASE_DIR / "MoneyPrinterTurbo"
 MPT_VENV_PYTHON = MONEY_PRINTER_DIR / "venv" / "bin" / "python3"
+EDGE_TTS_CMD = MONEY_PRINTER_DIR / "venv" / "bin" / "edge-tts"
 
 def run_command(cmd, cwd):
     print(f"   Executing: {' '.join(map(str, cmd))}")
@@ -118,6 +120,142 @@ if __name__ == "__main__":
     print("")
     return False, "Timeout waiting for video file"
 
+def generate_video_manim(code, task_id):
+    """
+    Renders Manim code.
+    """
+    print(f"📐 Manim Rendering: {task_id}")
+    
+    # Save code to a temp file
+    manim_file = BASE_DIR / f"manim_{task_id}.py"
+    try:
+        with open(manim_file, "w", encoding="utf-8") as f:
+            f.write(code)
+    except Exception as e:
+        return False, str(e)
+
+    # Run Manim: -pql means preview (optional here), quality low (for speed), non-interactive
+    # We want -ql (low quality) or -qm (medium) for automation.
+    # --buffer is not needed. -o is for output name.
+    # Classes in the script are usually GenScene as per skill spec.
+    # Run Manim via Docker (Official Image)
+    # We mount the BASE_DIR to /manim so the container can access script and write to media/
+    cmd = [
+        "docker", "run", "--rm",
+        "-v", f"{BASE_DIR}:/manim",
+        "manimcommunity/manim:stable",
+        "manim", "-ql", manim_file.name, "GenScene"
+    ]
+    
+    success, output = run_command(cmd, BASE_DIR)
+    
+    # Clean up source file
+    if manim_file.exists():
+        os.remove(manim_file)
+
+    if not success:
+        return False, output
+
+    # Manim 0.18+ saves to media/videos/manim_<task_id>/480p15/GenScene.mp4
+    # Let's find it.
+    video_dir = BASE_DIR / "media" / "videos" / f"manim_{task_id}"
+    matches = list(video_dir.glob("**/GenScene.mp4"))
+    
+    if matches:
+        return True, str(matches[0])
+    
+    return False, "Manim finished but video file GenScene.mp4 not found."
+
+def add_audio_to_video(video_path, narration="", task_id=""):
+    """
+    Add audio (TTS + background music) to video using ffmpeg.
+    Returns (success, final_video_path)
+    """
+    if not narration:
+        # No narration, return original video
+        return True, video_path
+    
+    print(f"🎵 Adding audio to video...")
+    
+    # Generate TTS audio
+    tts_file = BASE_DIR / f"tts_{task_id}.mp3"
+    try:
+        cmd = [
+            str(EDGE_TTS_CMD),
+            "--voice", "zh-CN-YunxiNeural",
+            "--text", narration,
+            "--write-media", str(tts_file)
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        if result.returncode != 0:
+            print(f"   ❌ TTS generation failed: {result.stderr}")
+            return False, f"TTS failed: {result.stderr}"
+        print(f"   ✅ TTS generated: {tts_file}")
+    except Exception as e:
+        print(f"   ❌ TTS error: {e}")
+        return False, str(e)
+    
+    # Find background music (if available)
+    bgm_file = None
+    if MUSIC_DIR.exists():
+        music_files = list(MUSIC_DIR.glob("*.mp3"))
+        if music_files:
+            import random
+            bgm_file = random.choice(music_files)
+            print(f"   🎼 Using background music: {bgm_file.name}")
+    
+    # Merge audio with video using ffmpeg
+    final_video = BASE_DIR / f"final_{task_id}.mp4"
+    
+    try:
+        if bgm_file:
+            # Mix TTS + BGM (lower BGM volume by 20dB)
+            cmd = [
+                "ffmpeg", "-y",
+                "-i", str(video_path),
+                "-i", str(tts_file),
+                "-i", str(bgm_file),
+                "-filter_complex",
+                "[1:a]volume=1.0[tts];[2:a]volume=0.1,aloop=loop=-1:size=2e+09[bgm];[tts][bgm]amix=inputs=2:duration=shortest[a]",
+                "-map", "0:v",
+                "-map", "[a]",
+                "-c:v", "copy",
+                "-c:a", "aac",
+                "-shortest",
+                str(final_video)
+            ]
+        else:
+            # Only TTS
+            cmd = [
+                "ffmpeg", "-y",
+                "-i", str(video_path),
+                "-i", str(tts_file),
+                "-map", "0:v",
+                "-map", "1:a",
+                "-c:v", "copy",
+                "-c:a", "aac",
+                "-shortest",
+                str(final_video)
+            ]
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        if result.returncode != 0:
+            print(f"   ❌ ffmpeg failed: {result.stderr}")
+            return False, f"ffmpeg failed: {result.stderr}"
+        
+        print(f"   ✅ Audio merged successfully")
+        
+        # Clean up temp files
+        if tts_file.exists():
+            os.remove(tts_file)
+        
+        return True, str(final_video)
+        
+    except Exception as e:
+        print(f"   ❌ Audio merge error: {e}")
+        return False, str(e)
+
+
 def process_task(task_file):
     try:
         with open(task_file, "r", encoding="utf-8") as f:
@@ -137,8 +275,21 @@ def process_task(task_file):
     with open(task_file, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-    # Run Generation
-    success, result = generate_video_mpt(data['subject'], data['script'], data['id'])
+    # Run Generation based on engine
+    engine = data.get("engine", "mpt")
+    if engine == "manim":
+        success, result = generate_video_manim(data['code'], data['id'])
+        
+        # Add audio if generation succeeded and narration exists
+        if success and data.get('narration'):
+            print(f"   🎤 Processing narration...")
+            audio_success, audio_result = add_audio_to_video(result, data['narration'], data['id'])
+            if audio_success:
+                result = audio_result  # Use the video with audio
+            else:
+                print(f"   ⚠️  Audio processing failed, using silent video: {audio_result}")
+    else:
+        success, result = generate_video_mpt(data['subject'], data['script'], data['id'])
 
     if success:
         print(f"   ✅ Generation Complete: {result}")
@@ -147,7 +298,9 @@ def process_task(task_file):
         if not OUTPUT_DIR.exists():
             OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
             
-        target_file = OUTPUT_DIR / f"{data['subject'].replace(' ', '_')}_{data['id']}.mp4"
+        # Standardize filename: Remove spaces and invalid chars
+        safe_subject = data['subject'].replace(' ', '_').replace('/', '_')
+        target_file = OUTPUT_DIR / f"{safe_subject}_{data['id']}.mp4"
         try:
             shutil.copy2(result, target_file)
             print(f"   🚀 Moved to: {target_file}")
