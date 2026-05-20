@@ -23,6 +23,7 @@ WeChat Matrix CLI - 公众号矩阵自动化工具
 
 命令:
     generate-all                为所有账号生成文章
+        --source <name>         热点来源 (baidu/horizon, 默认 baidu)
     generate                    为指定账号生成文章
         --account <name>        账号名称
         --topic <topic>         文章主题
@@ -50,9 +51,23 @@ EOF
 
 # 生成所有账号文章
 generate_all() {
-    echo -e "${BLUE}📝 正在为所有账号生成文章...${NC}"
+    local source="baidu"
+    
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --source)
+                source="$2"
+                shift 2
+                ;;
+            *)
+                shift
+                ;;
+        esac
+    done
+
+    echo -e "${BLUE}📝 正在为所有账号生成文章 (来源: $source)...${NC}"
     cd "$PROJECT_DIR"
-    python auto_matrix.py --once
+    python3 scripts/daily_auto_gen.py --source "$source"
     echo -e "${GREEN}✅ 文章生成完成${NC}"
 }
 

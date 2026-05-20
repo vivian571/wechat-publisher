@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>认知重组：现实解构者的沙盒日志</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- Marked.js for markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Glassmorphism Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>System.Sandbox</h2>
+                <span class="status-indicator"></span>
+            </div>
+            <nav id="nav-list"></nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="content-area">
+            <div class="terminal-header">
+                <div class="window-controls">
+                    <span class="dot close"></span>
+                    <span class="dot minimize"></span>
+                    <span class="dot maximize"></span>
+                </div>
+                <div class="title-bar" id="current-chapter-title">Loading...</div>
+            </div>
+            <div class="reader-container" id="reader-container">
+                <!-- Content injected here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Data and App Logic -->
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

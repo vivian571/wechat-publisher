@@ -36,25 +36,25 @@ logger = logging.getLogger(__name__)
 # ===== 各账户领域关键词配置 =====
 # 根据账户领域定义独立的热点筛选关键词
 ACCOUNT_KEYWORDS = {
-    "Account_A_CrossBorder": {
-        "name": "AI提示词实战",
-        "keywords": ["AI", "ChatGPT", "人工智能", "机器人", "智能", "科技", "效率", "办公", "自动化", "GPT", "写作", "神器"],
-        "fallback_topics": ["用ChatGPT提升工作效率的3个技巧", "AI时代普通人必学的提示词工程", "一个提示词让AI写出爆款文案"]
+    "fluent fan": {
+        "name": "英语学习爱好者",
+        "keywords": ["英语", "外语", "学习", "口语", "翻译", "出海", "全球", "留学"],
+        "fallback_topics": ["如何用AI打造沉浸式英语学习环境", "2026年出海人必备的翻译神器", "从零开始起号海外社媒"]
     },
-    "Account_B_English": {
-        "name": "AI科技赚钱",
-        "keywords": ["钱", "赚", "副业", "收入", "变现", "创业", "致富", "月入", "薪", "穷", "富", "投资", "理财", "工资", "AI", "裁员", "失业", "就业"],
-        "fallback_topics": ["2026年AI副业最赚钱的3种玩法", "普通人用AI月入过万的真实案例", "AI时代的信息差变现指南"]
+    "初心录": {
+        "name": "AI工具深度解析",
+        "keywords": ["AI", "ChatGPT", "Claude", "Agent", "自动化", "效率", "工具", "生产力", "机器人"],
+        "fallback_topics": ["DeepSeek R1 深度实测：国产大模型之光", "2026年个人AI Agent构建指南", "用AI重塑你的工作流"]
     },
-    "Account_C_Life": {
-        "name": "治愈系小厨房",
-        "keywords": ["吃", "菜", "美食", "餐", "做饭", "厨房", "食", "味", "烹", "下饭", "早餐", "零食", "甜品", "火锅", "烧烤", "网红"],
-        "fallback_topics": ["冬天一定要学会的3道暖心汤", "超简单的家常下饭菜，连做3碗饭", "一人食也要精致，10分钟搞定一餐"]
+    "美丽好风景": {
+        "name": "赛博美学与风景",
+        "keywords": ["风景", "美学", "图片", "视觉", "摄影", "生活", "艺术", "创意", "旅行"],
+        "fallback_topics": ["AI生成的绝美风景图，甚至比实拍还动人", "赛博朋克风摄影调色教程", "寻找城市中的赛博美学"]
     },
-    "Account_D_Tech": {
-        "name": "节气养生小馆",
-        "keywords": ["养生", "健康", "医", "病", "睡", "累", "疲", "中医", "老年", "保健", "身体", "免疫", "感冒", "长寿", "节气", "寒冷", "保暖"],
-        "fallback_topics": ["小寒节气养生指南：这3件事别再做了", "医生提醒：冬天这样吃最养身体", "老祖宗传下来的冬季养生偏方"]
+    "零更_PromptBook": {
+        "name": "爆款提示词实战",
+        "keywords": ["Prompt", "提示词", "指令", "大模型", "技巧", "实战", "调教", "文案", "创作"],
+        "fallback_topics": ["万能提示词框架 CO-STAR 实战解析", "如何写出让 AI 乖乖听话的指令", "爆款文案背后的提示词逻辑"]
     }
 }
 
@@ -103,16 +103,31 @@ def match_topic_for_account(hot_list: list, account_id: str) -> str:
         return fallback
 
 
-def run_daily_generation():
+def run_daily_generation(source="baidu"):
     """执行每日生成任务（每个账户独立选题 + 封面图片）"""
     logger.info("=" * 60)
     logger.info(f"🚀 每日自动化任务启动 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"📍 内容来源: {source}")
     logger.info("=" * 60)
     
-    # 1. 抓取热点
-    logger.info("📡 正在抓取百度热搜...")
-    hot_list = fetch_baidu_hot(50)
-    logger.info(f"   获取到 {len(hot_list)} 条热搜")
+    # 1. 抓取热点/简报
+    hot_list = []
+    horizon_items = []
+    
+    if source == "horizon":
+        from horizon_bridge import get_latest_summary, parse_horizon_summary
+        summary_file = get_latest_summary("zh")
+        if summary_file:
+            horizon_items = parse_horizon_summary(summary_file)
+            logger.info(f"📡 从 Horizon 简报获取到 {len(horizon_items)} 条高价值资讯")
+        else:
+            logger.warning("⚠️ 未找到 Horizon 简报，回退到百度热搜")
+            source = "baidu"
+            
+    if source == "baidu":
+        logger.info("📡 正在抓取百度热搜...")
+        hot_list = fetch_baidu_hot(50)
+        logger.info(f"   获取到 {len(hot_list)} 条热搜")
     
     # 2. 初始化生成器
     try:
@@ -131,13 +146,25 @@ def run_daily_generation():
             continue
         
         account_id = account_dir.name
-        account_config = ACCOUNT_KEYWORDS.get(account_id, {})
+        account_config = ACCOUNT_KEYWORDS.get(account_id)
+        if not account_config:
+            continue
+            
         account_name = account_config.get("name", account_id)
         
         logger.info(f"\n📌 【{account_name}】 正在选题...")
         
-        # 为该账户匹配合适的热点
-        topic = match_topic_for_account(hot_list, account_id)
+        # 选题逻辑
+        topic = ""
+        if source == "horizon" and horizon_items:
+            from horizon_bridge import match_item_for_account
+            item = match_item_for_account(horizon_items, account_id)
+            if item:
+                topic = item['title']
+                logger.info(f"   🎯 命中 Horizon 资讯: {topic}")
+        
+        if not topic:
+            topic = match_topic_for_account(hot_list, account_id)
         
         # 生成文章
         try:
@@ -165,5 +192,10 @@ def run_daily_generation():
 
 
 if __name__ == "__main__":
-    run_daily_generation()
+    import argparse
+    parser = argparse.ArgumentParser(description="Daily Auto Generation")
+    parser.add_argument("--source", choices=["baidu", "horizon"], default="baidu", help="热点来源: baidu (默认) 或 horizon")
+    args = parser.parse_args()
+    
+    run_daily_generation(source=args.source)
 
