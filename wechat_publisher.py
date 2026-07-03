@@ -43,7 +43,20 @@ logger = logging.getLogger(__name__)
 
 # --- 全局配置 ---
 DEFAULT_COVER_IMAGE_PATH = "default_cover.jpg"  # 默认封面图片路径
-COVER_IMAGES_DIR = "f:\\公众号写作\\编程\\temp_images"  # 封面图片目录路径
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_DEFAULT_COVER_DIRS = [
+    os.environ.get("WECHAT_COVER_IMAGES_DIR"),
+    "f:\\公众号写作\\编程\\temp_images",
+    os.path.join(_SCRIPT_DIR, "小说", "编程", "temp_images"),
+    _SCRIPT_DIR,
+]
+COVER_IMAGES_DIR = next(
+    (
+        path for path in _DEFAULT_COVER_DIRS
+        if path and os.path.exists(path) and os.path.isdir(path)
+    ),
+    os.path.join(_SCRIPT_DIR, "小说", "编程", "temp_images")
+)  # 封面图片目录路径
 USE_PERMANENT_MEDIA = True  # 是否使用永久素材
 PERMANENT_MEDIA_IDS = [
     "r2SuJ--pe9hF_U34Ly0J_Gnfu0A3JcEW2sJjpR9EcK2FxIZRWyBXO37XXkQQRpOk",
@@ -66,7 +79,7 @@ def get_random_cover_image():
     """从封面图片目录中随机选择一张图片作为封面"""
     if not os.path.exists(COVER_IMAGES_DIR) or not os.path.isdir(COVER_IMAGES_DIR):
         logger.warning(f"封面图片目录 {COVER_IMAGES_DIR} 不存在或不是有效目录，将使用默认封面图片")
-        return DEFAULT_COVER_IMAGE_PATH
+        return _find_fallback_cover_image()
     
     # 获取目录中所有图片文件
     image_files = [f for f in os.listdir(COVER_IMAGES_DIR) 
@@ -74,13 +87,34 @@ def get_random_cover_image():
     
     if not image_files:
         logger.warning(f"封面图片目录 {COVER_IMAGES_DIR} 中没有图片文件，将使用默认封面图片")
-        return DEFAULT_COVER_IMAGE_PATH
+        return _find_fallback_cover_image()
     
     # 随机选择一张图片
     random_image = random.choice(image_files)
     random_image_path = os.path.join(COVER_IMAGES_DIR, random_image)
     logger.info(f"已随机选择封面图片: {random_image_path}")
     return random_image_path
+
+
+def _find_fallback_cover_image():
+    """在工作区内兜底查找可上传的本地图片。"""
+    candidate_dirs = [
+        os.path.join(_SCRIPT_DIR, "小说", "编程", "temp_images"),
+        os.path.join(_SCRIPT_DIR, "multi-platform-publisher", "images"),
+        os.path.join(_SCRIPT_DIR, "My_Wechat_Matrix", ".browser_data"),
+        _SCRIPT_DIR,
+    ]
+    for base_dir in candidate_dirs:
+        if not base_dir or not os.path.exists(base_dir):
+            continue
+        for root, _, files in os.walk(base_dir):
+            for filename in files:
+                if filename.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')):
+                    image_path = os.path.join(root, filename)
+                    logger.info(f"使用兜底封面图片: {image_path}")
+                    return image_path
+    logger.warning(f"未找到可用封面图，将返回默认路径: {DEFAULT_COVER_IMAGE_PATH}")
+    return DEFAULT_COVER_IMAGE_PATH
 
 def check_title_length(title, platform='wechat'):
     """检查标题长度是否符合平台要求

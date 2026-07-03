@@ -27,3 +27,18 @@ __pycache__/
 venv/
 env/
 .venv/
+.browser_data/
+node_modules/
+venv_mac/
+openclaw/
+multi-platform-publisher/
+MoneyPrinterTurbo/
+my-personal-blog/
+MyAI_Agent/
+Agent GitHub/
+social-auto-upload/
+Project_N_System/
+OmniPublish/
+obsidian-skills/
+AIMedia/
+markitdown_env/
